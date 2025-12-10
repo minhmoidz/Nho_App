@@ -2,16 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
+
+// --- IMPORT CÁC FILE CỦA BẠN ---
 import 'home/home_page.dart';
+import 'home/reminder/AlarmScreen.dart';
 import 'home/reminder/notification_helper.dart';
 import 'login/auth_service.dart';
 import 'login/login_page.dart';
 import 'login/register_page.dart';
 
+// [MỚI] Tạo Key toàn cục để điều hướng từ notification
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Khóa màn hình dọc (tùy chọn, thường app mobile hay dùng)
+  // Khóa màn hình dọc
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -26,18 +32,45 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+// [THAY ĐỔI] Chuyển MyApp thành StatefulWidget để lắng nghe thông báo
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+
+  @override
+  void initState() {
+    super.initState();
+    // [MỚI] LẮNG NGHE SỰ KIỆN TỪ NOTIFICATION HELPER
+    // Khi đến giờ hẹn, NotificationHelper sẽ đẩy dữ liệu vào stream này
+    NotificationHelper.onNotificationClick.stream.listen((payload) {
+      if (payload != null) {
+        // Dùng navigatorKey để đẩy màn hình AlarmScreen đè lên tất cả
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (context) => AlarmScreen(payload: payload),
+          ),
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      // [MỚI] Gắn key vào đây
+      navigatorKey: navigatorKey,
+
       title: 'Nhớ App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
         useMaterial3: true,
-        fontFamily: 'Roboto', // Hoặc font mặc định
+        fontFamily: 'Roboto',
         scaffoldBackgroundColor: const Color(0xFFF8FAFC),
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
@@ -51,7 +84,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      // Hỗ trợ tiếng Việt cho các widget có sẵn (như lịch)
+      // Hỗ trợ tiếng Việt
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
@@ -62,21 +95,21 @@ class MyApp extends StatelessWidget {
         Locale('en', 'US'),
       ],
 
-      // Màn hình khởi động: Kiểm tra đăng nhập
+      // Màn hình khởi động
       home: const AuthCheck(),
 
       routes: {
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
         '/home': (context) => const HomePage(),
-        // Placeholder cho route Keycloak bị thiếu
         '/keycloak-login': (context) => const KeycloakLoginPlaceholder(),
       },
     );
   }
 }
 
-// Widget kiểm tra trạng thái đăng nhập
+// --- GIỮ NGUYÊN PHẦN CÒN LẠI (AuthCheck, Placeholder...) ---
+
 class AuthCheck extends StatefulWidget {
   const AuthCheck({super.key});
 
@@ -96,7 +129,6 @@ class _AuthCheckState extends State<AuthCheck> {
   }
 
   Future<void> _checkLoginStatus() async {
-    // Thử lấy token/userid
     final userId = await _authService.getUserId();
     if (mounted) {
       setState(() {
@@ -115,12 +147,10 @@ class _AuthCheckState extends State<AuthCheck> {
         ),
       );
     }
-
     return _isLoggedIn ? const HomePage() : const LoginPage();
   }
 }
 
-// Widget Placeholder cho Keycloak
 class KeycloakLoginPlaceholder extends StatelessWidget {
   const KeycloakLoginPlaceholder({super.key});
 
@@ -130,17 +160,10 @@ class KeycloakLoginPlaceholder extends StatelessWidget {
       appBar: AppBar(title: const Text('Đăng nhập Keycloak')),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.build_rounded, size: 60, color: Colors.orange),
             const SizedBox(height: 16),
-            const Text(
-              'Chức năng đang phát triển',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text('Vui lòng quay lại sau.'),
-            const SizedBox(height: 24),
+            const Text('Chức năng đang phát triển'),
             ElevatedButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Quay lại'),
