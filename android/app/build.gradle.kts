@@ -11,8 +11,12 @@ android {
     ndkVersion = "27.0.12077973"
 
     compileOptions {
+        // GIỮ NGUYÊN JAVA 11 NHƯNG BẬT DESUGARING
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+
+        // --- THAY ĐỔI 1: Bật cờ này để sửa lỗi flutter_local_notifications ---
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -41,6 +45,9 @@ android {
 }
 
 dependencies {
+    // --- THAY ĐỔI 2: Thêm thư viện desugar ---
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+
     // Add these ML Kit language model dependencies
     implementation("com.google.mlkit:text-recognition-chinese:16.0.0")
     implementation("com.google.mlkit:text-recognition-devanagari:16.0.0")
@@ -50,4 +57,15 @@ dependencies {
 
 flutter {
     source = "../.."
+}
+
+configurations.all {
+    resolutionStrategy {
+        force("androidx.activity:activity:1.9.3")
+    }
+}
+
+// --- THÊM ĐOẠN NÀY ĐỂ TẮT CẢNH BÁO JAVA OBSOLETE ---
+tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.add("-Xlint:-options")
 }
