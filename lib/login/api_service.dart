@@ -6,7 +6,7 @@ import 'auth_service.dart';
 
 class ApiService {
   // *** QUAN TRỌNG: Kiểm tra kỹ IP này. Nếu chạy máy thật cần chung WiFi ***
-  final String _baseUrl = "http://192.168.30.28:8000";
+  final String _baseUrl = "http://192.168.30.28:8010";
 
   final Map<String, String> _headers = {
     'Content-Type': 'application/json; charset=UTF-8',

@@ -9,7 +9,7 @@ import '../../login/auth_service.dart'; // BẮT BUỘC: Để nhận diện đu
 
 class OcrApiService {
   // Địa chỉ API OCR
-  static const String _apiUrl = 'https://be1-service-441093451544.asia-east1.run.app/api/v1/ocr';
+  static const String _apiUrl = 'http://192.168.30.28:8010/api/v1/ocr';
 
   /// Hàm gửi ảnh lên Server để lấy text
   static Future<String> extractTextFromImage(XFile image) async {

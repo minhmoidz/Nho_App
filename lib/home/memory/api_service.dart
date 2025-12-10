@@ -8,7 +8,7 @@ import '../../login/auth_service.dart';
 
 class MemoryService {
   // 1. Cấu hình IP (Dùng 10.0.2.2 cho máy ảo Android, IP thật cho máy thật)
-  final String _baseUrl = "http://192.168.30.28:8000";
+  final String _baseUrl = "http://192.168.30.28:8010";
 
   // URL Worker của bạn
   final String _workerUrl = "https://my-r2-worker.sangtd.workers.dev";

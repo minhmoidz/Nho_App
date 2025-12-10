@@ -4,10 +4,8 @@ import 'package:http/http.dart' as http;
 import '../../login/auth_service.dart'; // Đảm bảo đường dẫn đúng
 
 class HealthApiService {
-  // LƯU Ý QUAN TRỌNG:
-  // - Nếu chạy máy ảo (Emulator): dùng 'http://10.0.2.2:8000/api/v1/health'
-  // - Nếu chạy máy thật: dùng IP LAN ví dụ 'http://192.168.1.x:8000/api/v1/health'
-  static const String _baseUrl = 'hhttps://be1-service-441093451544.asia-east1.run.app/api/v1/health';
+
+  static const String _baseUrl = 'http://192.168.30.28:8010/api/v1/health';
 
   // Helper: Lấy headers và Token
   static Future<Map<String, String>> _getHeaders() async {
