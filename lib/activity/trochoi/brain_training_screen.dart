@@ -1,7 +1,7 @@
 // lib/screens/brain_training_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gioapp/trochoi/services/score_service.dart';
+import 'package:gioapp/activity/trochoi/services/score_service.dart';
 import 'memory_match_game.dart';
 import 'proverb_quiz_game.dart';
 import 'sound_guess_game.dart';

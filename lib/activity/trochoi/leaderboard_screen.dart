@@ -1,6 +1,6 @@
 // lib/screens/leaderboard_screen.dart
 import 'package:flutter/material.dart';
-import 'package:gioapp/trochoi/services/score_service.dart';
+import 'package:gioapp/activity/trochoi/services/score_service.dart';
 import 'package:intl/intl.dart';
 
 import 'models/game_score.dart';

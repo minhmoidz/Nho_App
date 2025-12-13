@@ -3,12 +3,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../../login/auth_service.dart';
 
 class MemoryService {
   // 1. Cấu hình IP (Dùng 10.0.2.2 cho máy ảo Android, IP thật cho máy thật)
-  final String _baseUrl = "http://192.168.30.28:8000";
+  static final String _baseUrl = dotenv.env['API_BASE_URL']!;
 
   // URL Worker của bạn
   final String _workerUrl = "https://my-r2-worker.sangtd.workers.dev";

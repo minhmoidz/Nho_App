@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:gioapp/trochoi/services/score_service.dart';
+import 'package:gioapp/activity/trochoi/services/score_service.dart';
 
 import 'models/game_score.dart';
 

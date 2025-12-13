@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gioapp/constants/app_colors.dart';
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -34,28 +35,28 @@ class BottomNavBar extends StatelessWidget {
                 icon: Icons.home_rounded,
                 label: 'Trang chủ',
                 isSelected: currentIndex == 0,
-                activeColor: Colors.green,
+                activeColor: AppColors.primary,
                 onTap: () => onItemSelected(0),
               ),
               _NavItem(
                 icon: Icons.local_library_rounded, // Icon sách vở cho "Kiến thức"
                 label: 'Kiến thức',
                 isSelected: currentIndex == 1,
-                activeColor: Colors.blue,
+                activeColor: AppColors.primary,
                 onTap: () => onItemSelected(1),
               ),
               _NavItem(
-                icon: Icons.psychology_rounded, // Icon bộ não cho "Rèn luyện"
-                label: 'Rèn luyện',
+                icon: Icons.gamepad, // Icon bộ não cho "Trò chơi"
+                label: 'Trò chơi',
                 isSelected: currentIndex == 2,
-                activeColor: Colors.orange,
+                activeColor: AppColors.primary,
                 onTap: () => onItemSelected(2),
               ),
               _NavItem(
                 icon: Icons.person_rounded, // Icon người cho "Hồ sơ"
                 label: 'Hồ sơ',
                 isSelected: currentIndex == 3,
-                activeColor: Colors.purple,
+                activeColor: AppColors.primary,
                 onTap: () => onItemSelected(3),
               ),
             ],

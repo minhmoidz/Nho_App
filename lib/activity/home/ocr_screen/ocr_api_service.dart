@@ -4,13 +4,11 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:http_parser/http_parser.dart'; // BẮT BUỘC: Để set Content-Type
 import 'package:mime/mime.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../../login/auth_service.dart'; // BẮT BUỘC: Để nhận diện đuôi file (jpg, png)
 
 class OcrApiService {
-  // Địa chỉ API OCR
-  static const String _apiUrl = 'https://be1-service-441093451544.asia-east1.run.app/api/v1/ocr';
-
   /// Hàm gửi ảnh lên Server để lấy text
   static Future<String> extractTextFromImage(XFile image) async {
     try {
@@ -25,7 +23,8 @@ class OcrApiService {
       }
 
       // 2. Chuẩn bị Request Multipart
-      final uri = Uri.parse(_apiUrl);
+      final String _baseUrl = dotenv.env['API_BASE_URL']!;
+      final uri = Uri.parse(_baseUrl + '/api/v1/ocr');
       var request = http.MultipartRequest('POST', uri);
 
       // Thêm Header Authorization

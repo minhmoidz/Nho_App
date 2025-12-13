@@ -100,7 +100,7 @@ class _LoginPageState extends State<LoginPage> {
               Text("Nhớ app",
                 style: TextStyle(
                 color: Color.fromARGB(255, 57, 123, 166),
-                fontSize: 21,
+                fontSize: 30,
                 fontWeight: FontWeight.bold,
                 ),
               ),

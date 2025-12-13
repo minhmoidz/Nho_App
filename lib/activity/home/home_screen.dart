@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:gioapp/home/reminder/manual_reminder_screen.dart';
-import 'package:gioapp/home/reminders/create_diary_screen.dart';
-import 'package:gioapp/home/sos/sos_screen.dart';
+import 'package:gioapp/activity/home/reminder/manual_reminder_screen.dart';
+import 'package:gioapp/activity/home/reminders/create_diary_screen.dart';
+import 'package:gioapp/activity/home/sos/sos_screen.dart';
+import 'package:gioapp/constants/app_colors.dart';
 import '../chatbot/chat_page.dart';
 import '../chatbot/voice_page.dart';
 import '../knowledge/knowledge_screen.dart';
 import '../login/auth_service.dart';
 import '../notification/notifications_page.dart'; // Đảm bảo đã import file này
-import '../profile/profile_page.dart';
+import '../profile/profile_screen.dart';
 import '../trochoi/brain_training_screen.dart';
 import '../wailet/bottom_nav_bar.dart';
 import '../wailet/custom_top_bar.dart';
@@ -160,8 +161,8 @@ class _HomePageState extends State<HomePage> {
                   subtitle: 'Trò chuyện văn bản, hỏi đáp thông tin',
                   icon: Icons.chat_bubble_rounded,
                   gradientColors: [
-                    Colors.green.shade400,
-                    Colors.green.shade600,
+                    AppColors.primary,
+                    AppColors.primary,
                   ],
                   onTap: () {
                     Navigator.push(
@@ -181,8 +182,8 @@ class _HomePageState extends State<HomePage> {
                   subtitle: 'Trò chuyện bằng giọng nói tự nhiên',
                   icon: Icons.phone_in_talk_rounded,
                   gradientColors: [
-                    Colors.blue.shade400,
-                    Colors.blue.shade600,
+                    AppColors.secondary,
+                    AppColors.secondary,
                   ],
                   onTap: () {
                     Navigator.push(
@@ -225,8 +226,8 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     _buildToolCard(
                       icon: Icons.camera_alt_rounded,
-                      label: 'Chụp ảnh\nđọc chữ',
-                      color: Colors.teal,
+                      label: 'Chụp ảnh, đọc chữ',
+                      color: AppColors.primary,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -239,7 +240,7 @@ class _HomePageState extends State<HomePage> {
                     _buildToolCard(
                       icon: Icons.book_rounded,
                       label: 'Nhật ký\ntừ ảnh',
-                      color: Colors.orange,
+                      color: AppColors.primary,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -252,7 +253,7 @@ class _HomePageState extends State<HomePage> {
                     _buildToolCard(
                       icon: Icons.sos_rounded, // Đổi icon thành SOS
                       label: 'SOS\nKhẩn cấp',  // Đổi tên hiển thị
-                      color: Colors.red,       // Đổi màu thành màu đỏ (màu cảnh báo)
+                      color: AppColors.primary,       // Đổi màu thành màu đỏ (màu cảnh báo)
                       onTap: () {
                         Navigator.push(
                           context,
@@ -265,7 +266,7 @@ class _HomePageState extends State<HomePage> {
                     _buildToolCard(
                       icon: Icons.notifications_active_rounded,
                       label: 'Tạo\nnhắc nhở',
-                      color: Colors.pink,
+                      color: AppColors.primary,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -278,7 +279,7 @@ class _HomePageState extends State<HomePage> {
                     _buildToolCard(
                       icon: Icons.favorite_rounded,
                       label: 'Sức khỏe\nhàng ngày',
-                      color: Colors.red,
+                      color: AppColors.primary,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -291,7 +292,7 @@ class _HomePageState extends State<HomePage> {
                     _buildToolCard(
                       icon: Icons.photo_library_rounded,
                       label: 'Kỷ niệm\ncủa tôi',
-                      color: Colors.indigo,
+                      color: AppColors.primary,
                       onTap: () {
                         Navigator.push(
                           context,

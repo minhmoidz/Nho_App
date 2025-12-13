@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../login/auth_service.dart';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class MemoryApiService {
-  static const String _baseUrl = 'https://be1-service-441093451544.asia-east1.run.app/api/v1';
+  static final String _baseUrl = dotenv.env['API_BASE_URL']!;
 
   // *** HÀM BỔ TRỢ ĐỂ LẤY HEADERS (GIỐNG NHƯ TRƯỚC) ***
   static Future<Map<String, String>> _getAuthenticatedHeaders(

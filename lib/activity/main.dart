@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'home/home_page.dart';
-import 'home/reminder/notification_helper.dart';
-import 'login/auth_service.dart';
-import 'login/login_page.dart';
-import 'login/register_page.dart';
+import './home/home_screen.dart';
+import './home/reminder/notification_helper.dart';
+import './login/auth_service.dart';
+import './login/login_page.dart';
+import './login/register_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {

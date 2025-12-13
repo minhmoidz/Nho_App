@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:camera/camera.dart';
 import 'package:http_parser/http_parser.dart';
 import 'dart:async';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class VoiceChatPage1 extends StatefulWidget {
   const VoiceChatPage1({super.key});
@@ -34,7 +35,7 @@ class _VoiceChatPageState extends State<VoiceChatPage1> with TickerProviderState
   List<CameraDescription> _cameras = [];
   bool _isCameraOn = false;
 
-  final String userId = "user123";
+  final String userId = "Minh";
   final String sessionId = "session123";
 
   @override
@@ -204,7 +205,9 @@ class _VoiceChatPageState extends State<VoiceChatPage1> with TickerProviderState
   }
 
   Future<void> _sendToBot(String inputText, {XFile? imageFile}) async {
-    final uri = Uri.parse("https://aitools.ptit.edu.vn/nho/analyze-image");
+    final String _baseUrl = dotenv.env['API_BASE_URL']!;
+    final uri = Uri.parse(_baseUrl);
+
     var request = http.MultipartRequest('POST', uri);
     request.fields['user_id'] = userId;
     request.fields['session_id'] = sessionId;
