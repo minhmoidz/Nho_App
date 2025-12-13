@@ -9,17 +9,31 @@ class Article {
   final String imageUrl;
   final String content;
 
-  Article({required this.id, required this.title, required this.category, required this.imageUrl, required this.content});
+  Article({
+    required this.id,
+    required this.title,
+    required this.category,
+    required this.imageUrl,
+    required this.content,
+  });
 }
 
 class VideoItem {
   final String id;
   final String title;
   final String duration;
-  final String thumbnailUrl;
+  final String thumbnailUrl; // Link ảnh bìa
+  final String videoUrl;     // Link video Youtube chuẩn (MỚI THÊM)
   final String author;
 
-  VideoItem({required this.id, required this.title, required this.duration, required this.thumbnailUrl, required this.author});
+  VideoItem({
+    required this.id,
+    required this.title,
+    required this.duration,
+    required this.thumbnailUrl,
+    required this.videoUrl,
+    required this.author,
+  });
 }
 
 class Medicine {
@@ -29,7 +43,13 @@ class Medicine {
   final String dosage;
   final String warning;
 
-  Medicine({required this.id, required this.name, required this.usage, required this.dosage, required this.warning});
+  Medicine({
+    required this.id,
+    required this.name,
+    required this.usage,
+    required this.dosage,
+    required this.warning,
+  });
 }
 
 // --- MOCK DATA (Dữ liệu mẫu) ---
@@ -58,7 +78,6 @@ final List<Article> sampleArticles = [
   ),
 ];
 
-
 final List<Medicine> sampleMedicines = [
   Medicine(
     id: 'm1',
@@ -83,22 +102,32 @@ final List<Medicine> sampleMedicines = [
   ),
 ];
 
-// Trong file knowledge_data.dart
+// Dữ liệu video đã cập nhật thêm videoUrl
 final List<VideoItem> sampleVideos = [
   VideoItem(
     id: 'v1',
     title: 'Bài tập Dưỡng sinh Kinh lạc - Giúp ngủ ngon',
     duration: '15:30',
-    author: 'HLV Nguyễn Văn A',
-    // Sử dụng link ảnh thumbnail youtube thật để lấy ID dễ dàng
+    author: 'Sức Khỏe Người Cao Tuổi',
     thumbnailUrl: 'https://img.youtube.com/vi/lJdFK19yQa4/hqdefault.jpg',
+    // Link chuẩn để plugin cắt lấy ID "lJdFK19yQa4"
+    videoUrl: 'https://www.youtube.com/watch?v=lJdFK19yQa4',
   ),
   VideoItem(
     id: 'v2',
-    title: 'Xử lý khi bị tăng huyết áp đột ngột',
+    title: 'Xử lý nhanh khi bị tăng huyết áp đột ngột',
     duration: '08:45',
-    author: 'Bác sĩ Bình',
+    author: 'Bác sĩ Gia Đình',
     thumbnailUrl: 'https://img.youtube.com/vi/ScMzIvxBSi4/hqdefault.jpg',
+    // Link chuẩn để plugin cắt lấy ID "ScMzIvxBSi4"
+    videoUrl: 'https://www.youtube.com/watch?v=ScMzIvxBSi4',
+  ),
+  VideoItem(
+    id: 'v3',
+    title: 'Nhạc thiền thư giãn dễ ngủ',
+    duration: '60:00',
+    author: 'Thiền Đạo',
+    thumbnailUrl: 'https://img.youtube.com/vi/1ZYbU82GVz4/hqdefault.jpg',
+    videoUrl: 'https://www.youtube.com/watch?v=1ZYbU82GVz4',
   ),
 ];
-

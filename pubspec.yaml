@@ -61,8 +61,8 @@ dependencies:
   share_plus: ^7.2.1
   youtube_player_flutter: ^9.0.1
   webview_flutter: ^4.4.2
-
-
+  flutter_timezone: ^3.0.1
+  convert: ^3.1.1
 
 dev_dependencies:
   flutter_test:

@@ -4,18 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:http/http.dart' as http; // Import thêm cái này để test mạng
-
-// Đảm bảo import đúng file của bạn
-import 'api_service.dart';
+import 'package:http/http.dart' as http;
 import 'MemoryDetailPage.dart';
+import 'api_service.dart'; // Đảm bảo bạn có file này hoặc xóa dòng này đi nếu chưa cần
 
 // --- CONSTANTS ---
 const Color kPrimaryColor = Color(0xFF009688);
-const Color kPrimaryDark = Color(0xFF00796B);
-const Color kBackgroundColor = Color(0xFFF0F2F5);
-const Color kSurfaceColor = Colors.white;
-const double kBorderRadius = 24.0;
+const Color kBackgroundColor = Color(0xFFF2F4F8);
 
 class MemoryPage extends StatefulWidget {
   const MemoryPage({super.key});
@@ -30,54 +25,17 @@ class _MemoryPageState extends State<MemoryPage> {
 
   List<dynamic> _memories = [];
   bool _isLoading = true;
-  String? _currentlyPlayingSignedUrl;
-  PlayerState _playerState = PlayerState.stopped;
+  String? _currentlyPlayingUrl;
 
   @override
   void initState() {
     super.initState();
-
-    // 1. GỌI HÀM TEST MẠNG NGAY KHI VÀO
-    _testNetworkConnection();
-
-    // 2. Tải danh sách
     _fetchMemories();
 
-    _audioPlayer.onPlayerStateChanged.listen((state) {
-      if (mounted) {
-        setState(() {
-          _playerState = state;
-          if (state == PlayerState.completed) {
-            _currentlyPlayingSignedUrl = null;
-          }
-        });
-      }
+    // Khi hết bài thì reset icon
+    _audioPlayer.onPlayerComplete.listen((_) {
+      if (mounted) setState(() => _currentlyPlayingUrl = null);
     });
-  }
-
-  // --- HÀM TEST MẠNG (DEBUG) ---
-  Future<void> _testNetworkConnection() async {
-    debugPrint("🔵 [NETWORK TEST] Đang kiểm tra kết nối Internet...");
-    try {
-      // Test Google
-      final googleRes = await http.get(Uri.parse('https://www.google.com')).timeout(const Duration(seconds: 5));
-      debugPrint("✅ [NETWORK TEST] Kết nối Google OK (Status: ${googleRes.statusCode}) -> Máy ảo CÓ mạng.");
-    } catch (e) {
-      debugPrint("❌ [NETWORK TEST] Không thể kết nối Google -> Máy ảo MẤT mạng Internet!");
-      debugPrint("👉 Lỗi chi tiết: $e");
-      debugPrint("👉 Gợi ý: Tắt máy ảo, chọn 'Cold Boot Now' trong Device Manager.");
-      return; // Mất mạng thì không test tiếp worker làm gì
-    }
-
-    try {
-      // Test Worker
-      debugPrint("🔵 [NETWORK TEST] Đang thử gọi Worker...");
-      final workerRes = await http.get(Uri.parse('https://my-r2-worker.sangtd.workers.dev/generate-download-url?fileName=test_connection')).timeout(const Duration(seconds: 5));
-      debugPrint("✅ [NETWORK TEST] Kết nối Worker OK (Status: ${workerRes.statusCode})");
-    } catch (e) {
-      debugPrint("❌ [NETWORK TEST] Không thể kết nối Worker!");
-      debugPrint("👉 Lỗi chi tiết: $e");
-    }
   }
 
   @override
@@ -87,100 +45,66 @@ class _MemoryPageState extends State<MemoryPage> {
   }
 
   Future<void> _fetchMemories() async {
-    debugPrint("🔵 [DATA] Bắt đầu tải danh sách Memories...");
     setState(() => _isLoading = true);
     try {
-      final data = await _memoryService.getMemories(limit: 20);
-      debugPrint("✅ [DATA] Tải thành công ${data.length} mục.");
-      if (mounted) {
-        setState(() {
-          _memories = data;
-          _isLoading = false;
-        });
-      }
+      final data = await _memoryService.getMemories();
+      if (mounted) setState(() { _memories = data; _isLoading = false; });
     } catch (e) {
-      debugPrint("❌ [DATA] Lỗi tải danh sách: $e");
-      if (mounted) {
-        setState(() => _isLoading = false);
-        _showSnackBar('Không thể tải ký ức: $e', isError: true);
-      }
+      if (mounted) setState(() => _isLoading = false);
+      debugPrint("Lỗi tải data: $e");
     }
   }
 
-  Future<void> _handlePlayAudio(String signedUrl) async {
+  Future<void> _handlePlayAudio(String rawUrl) async {
     try {
-      if (_currentlyPlayingSignedUrl == signedUrl && _playerState == PlayerState.playing) {
+      final signedUrl = await _memoryService.getSignedUrl(rawUrl);
+      if (signedUrl == null) return;
+
+      if (_currentlyPlayingUrl == signedUrl) {
         await _audioPlayer.stop();
-        setState(() => _currentlyPlayingSignedUrl = null);
+        setState(() => _currentlyPlayingUrl = null);
       } else {
         await _audioPlayer.stop();
-        debugPrint("🔊 Đang phát audio: $signedUrl");
         await _audioPlayer.play(UrlSource(signedUrl));
-        setState(() => _currentlyPlayingSignedUrl = signedUrl);
+        setState(() => _currentlyPlayingUrl = signedUrl);
       }
     } catch (e) {
-      debugPrint("❌ Lỗi phát audio: $e");
-      _showSnackBar('Lỗi phát âm thanh', isError: true);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Không thể phát âm thanh")));
     }
   }
 
   Future<void> _deleteMemory(int id) async {
-    bool? confirm = await showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Xóa ký ức?", style: TextStyle(color: Colors.red)),
-        content: const Text("Hành động này không thể hoàn tác."),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Hủy")),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text("Xóa", style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
+    bool confirm = await showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text("Xác nhận xóa"),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Hủy")),
+            TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text("Xóa", style: TextStyle(color: Colors.red))),
+          ],
+        )
+    ) ?? false;
 
-    if (confirm == true) {
-      try {
-        await _memoryService.deleteMemory(id);
-        _showSnackBar("Đã xóa!");
-        _fetchMemories();
-      } catch (e) {
-        _showSnackBar("Lỗi xóa: $e", isError: true);
-      }
+    if (confirm) {
+      await _memoryService.deleteMemory(id);
+      _fetchMemories();
     }
-  }
-
-  void _openEditSheet(Map<String, dynamic> item) async {
-    final result = await showModalBottomSheet(
-      context: context, isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => EditMemorySheet(memoryService: _memoryService, item: item),
-    );
-    if (result == true) _fetchMemories();
   }
 
   void _openAddSheet() async {
     final result = await showModalBottomSheet(
-      context: context, isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
       builder: (_) => AddMemorySheet(memoryService: _memoryService),
     );
     if (result == true) _fetchMemories();
   }
 
-  void _navigateToDetail(Map<String, dynamic> item) {
-    _audioPlayer.stop();
-    Navigator.push(context, MaterialPageRoute(builder: (_) =>
-        MemoryDetailPage(memoryId: item['id'], memoryService: _memoryService, initialData: item)
-    ));
-  }
-
-  void _showSnackBar(String msg, {bool isError = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg), backgroundColor: isError ? Colors.red : Colors.green,
-    ));
+  void _openEditSheet(Map<String, dynamic> item) async {
+    final result = await showModalBottomSheet(
+      context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
+      builder: (_) => EditMemorySheet(memoryService: _memoryService, item: item),
+    );
+    if (result == true) _fetchMemories();
   }
 
   @override
@@ -188,64 +112,57 @@ class _MemoryPageState extends State<MemoryPage> {
     return Scaffold(
       backgroundColor: kBackgroundColor,
       appBar: AppBar(
-        title: const Text("Góc Ký Ức", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        flexibleSpace: Container(decoration: const BoxDecoration(gradient: LinearGradient(colors: [kPrimaryColor, kPrimaryDark]))),
+        title: const Text("Góc Ký Ức", style: TextStyle(color: Colors.white)),
+        backgroundColor: kPrimaryColor,
         centerTitle: true,
         actions: [IconButton(icon: const Icon(Icons.refresh, color: Colors.white), onPressed: _fetchMemories)],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openAddSheet, backgroundColor: kPrimaryDark,
-        icon: const Icon(Icons.add_a_photo, color: Colors.white),
-        label: const Text("Thêm", style: TextStyle(color: Colors.white)),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: kPrimaryColor,
+        onPressed: _openAddSheet,
+        child: const Icon(Icons.add, color: Colors.white),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : _memories.isEmpty ? _buildEmptyState()
+          : _memories.isEmpty
+          ? const Center(child: Text("Chưa có ký ức nào"))
           : RefreshIndicator(
         onRefresh: _fetchMemories,
         child: ListView.builder(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 80),
+          padding: const EdgeInsets.all(16),
           itemCount: _memories.length,
-          itemBuilder: (context, index) {
-            return MemoryItemCard(
-              item: _memories[index],
-              memoryService: _memoryService,
-              currentPlayingUrl: _currentlyPlayingSignedUrl,
-              onPlayAudio: _handlePlayAudio,
-              onDelete: () => _deleteMemory(_memories[index]['id']),
-              onEdit: () => _openEditSheet(_memories[index]),
-              onTap: () => _navigateToDetail(_memories[index]),
-            );
-          },
+          itemBuilder: (ctx, i) => MemoryItemCard(
+            item: _memories[i],
+            memoryService: _memoryService,
+            currentlyPlayingUrl: _currentlyPlayingUrl,
+            onPlayAudio: _handlePlayAudio,
+            onDelete: () => _deleteMemory(_memories[i]['id']),
+            onEdit: () => _openEditSheet(_memories[i]),
+            onTap: () {
+              // Navigate to detail if needed
+              Navigator.push(context, MaterialPageRoute(builder: (_) => MemoryDetailPage(memoryId: _memories[i]['id'], memoryService: _memoryService, initialData: _memories[i])));
+            },
+          ),
         ),
       ),
     );
   }
-
-  Widget _buildEmptyState() => Center(child: Text("Chưa có ký ức nào", style: TextStyle(color: Colors.grey[600])));
 }
 
-// =============================================================================
-// WIDGET ITEM SIÊU DEBUG (Thay thế class MemoryItemCard cũ)
-// =============================================================================
+// --- WIDGET CARD ---
 class MemoryItemCard extends StatefulWidget {
   final Map<String, dynamic> item;
   final MemoryService memoryService;
-  final String? currentPlayingUrl;
+  final String? currentlyPlayingUrl;
   final Function(String) onPlayAudio;
   final VoidCallback onDelete;
   final VoidCallback onEdit;
   final VoidCallback onTap;
 
   const MemoryItemCard({
-    super.key,
-    required this.item,
-    required this.memoryService,
-    required this.currentPlayingUrl,
-    required this.onPlayAudio,
-    required this.onDelete,
-    required this.onEdit,
-    required this.onTap,
+    super.key, required this.item, required this.memoryService,
+    required this.currentlyPlayingUrl, required this.onPlayAudio,
+    required this.onDelete, required this.onEdit, required this.onTap
   });
 
   @override
@@ -253,209 +170,112 @@ class MemoryItemCard extends StatefulWidget {
 }
 
 class _MemoryItemCardState extends State<MemoryItemCard> {
-  Future<String?>? _linkFuture;
-  Future<String?>? _audioFuture;
-
-  // Biến để lưu ảnh dạng Byte nếu tải thành công
   Uint8List? _imageBytes;
-  bool _isImageLoading = true;
-  String _imageError = "";
+  bool _loadingImage = true;
+  String? _signedAudioUrl;
 
   @override
   void initState() {
     super.initState();
-    _audioFuture = widget.memoryService.getSignedUrl(widget.item['audio_url']);
-
-    // Tự động tải và phân tích ảnh
     _loadImage();
+    _loadAudioUrl();
   }
 
-  // --- HÀM DEBUG QUAN TRỌNG: Tải và "Soi" dữ liệu trả về ---
-  Future<void> _loadImage() async {
-    final rawUrl = widget.item['image_url'];
-    if (rawUrl == null) {
-      if (mounted) setState(() => _isImageLoading = false);
-      return;
+  void _loadAudioUrl() async {
+    if (widget.item['audio_url'] != null) {
+      final url = await widget.memoryService.getSignedUrl(widget.item['audio_url']);
+      if (mounted) setState(() => _signedAudioUrl = url);
     }
+  }
 
+  void _loadImage() async {
+    if (widget.item['image_url'] == null) return;
     try {
-      // 1. Lấy Link Base64 từ API Service
-      final signedUrl = await widget.memoryService.getSignedUrl(rawUrl);
-      if (signedUrl == null) throw Exception("Không tạo được link signed");
-
-      // 2. Tự gọi HTTP GET để xem Server trả về cái gì
-      debugPrint("🔍 Đang tải ảnh từ: $signedUrl");
-      final response = await http.get(Uri.parse(signedUrl), headers: {
-        // Thêm Header giả lập Trình duyệt để tránh bị chặn
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
-      });
-
-      debugPrint("📥 Server trả về Status: ${response.statusCode}");
-      debugPrint("📄 Content-Type: ${response.headers['content-type']}");
-
-      // 3. Kiểm tra xem có phải ảnh không?
-      final contentType = response.headers['content-type'] ?? "";
-
-      if (response.statusCode == 200) {
-        if (contentType.contains("image")) {
-          // ✅ LÀ ẢNH -> HIỂN THỊ
-          if (mounted) {
-            setState(() {
-              _imageBytes = response.bodyBytes;
-              _isImageLoading = false;
-            });
-          }
-        } else {
-          // ❌ LÀ VĂN BẢN/HTML (Lỗi trá hình) -> IN RA LOG ĐỂ ĐỌC
-          String bodyText = response.body;
-          if (bodyText.length > 500) bodyText = bodyText.substring(0, 500) + "..."; // Cắt ngắn nếu dài quá
-
-          debugPrint("🔴 LỖI: Server trả về Status 200 nhưng không phải ảnh!");
-          debugPrint("👉 Nội dung server trả về: $bodyText");
-
-          if (mounted) {
-            setState(() {
-              _imageError = "Server trả về text: $bodyText";
-              _isImageLoading = false;
-            });
-          }
-        }
-      } else {
-        // Lỗi HTTP khác
-        if (mounted) {
-          setState(() {
-            _imageError = "Lỗi HTTP ${response.statusCode}";
-            _isImageLoading = false;
-          });
+      final url = await widget.memoryService.getSignedUrl(widget.item['image_url']);
+      if (url != null) {
+        final res = await http.get(Uri.parse(url));
+        if (res.statusCode == 200 && mounted) {
+          setState(() { _imageBytes = res.bodyBytes; _loadingImage = false; });
         }
       }
-    } catch (e) {
-      debugPrint("❌ Lỗi ngoại lệ khi tải ảnh: $e");
-      if (mounted) {
-        setState(() {
-          _imageError = e.toString();
-          _isImageLoading = false;
-        });
-      }
+    } catch (_) {
+      if (mounted) setState(() => _loadingImage = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
-    final content = item['content'] ?? "";
-    String dateStr = "Unknown";
-    try {
-      final dt = DateTime.parse(item['created_at']).toLocal();
-      dateStr = "${dt.day}/${dt.month}/${dt.year}";
-    } catch (_) {}
+    final isPlaying = _signedAudioUrl != null && _signedAudioUrl == widget.currentlyPlayingUrl;
 
     return GestureDetector(
       onTap: widget.onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 24),
-        decoration: BoxDecoration(
-          color: kSurfaceColor,
-          borderRadius: BorderRadius.circular(kBorderRadius),
-          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 15, offset: const Offset(0, 5))],
-        ),
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 20),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 3,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 8, 10),
-              child: Row(
-                children: [
-                  const CircleAvatar(radius: 18, backgroundColor: Color(0xFFE0F2F1), child: Icon(Icons.favorite, size: 18, color: kPrimaryColor)),
-                  const SizedBox(width: 10),
-                  Expanded(child: Text(dateStr, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15))),
-                  PopupMenuButton<String>(
-                    onSelected: (v) => v == 'edit' ? widget.onEdit() : widget.onDelete(),
-                    itemBuilder: (_) => [
-                      const PopupMenuItem(value: 'edit', child: Text('Sửa')),
-                      const PopupMenuItem(value: 'delete', child: Text('Xóa', style: TextStyle(color: Colors.red))),
-                    ],
-                    child: const Padding(padding: EdgeInsets.all(8), child: Icon(Icons.more_horiz, color: Colors.grey)),
-                  )
+            // Header
+            ListTile(
+              leading: const CircleAvatar(backgroundColor: Colors.teal, child: Icon(Icons.person, color: Colors.white)),
+              title: Text("Kỷ niệm ngày: ${item['created_at'].toString().substring(0, 10)}"),
+              trailing: PopupMenuButton(
+                itemBuilder: (_) => [
+                  const PopupMenuItem(value: 'edit', child: Text("Sửa")),
+                  const PopupMenuItem(value: 'del', child: Text("Xóa", style: TextStyle(color: Colors.red))),
                 ],
+                onSelected: (v) => v == 'edit' ? widget.onEdit() : widget.onDelete(),
               ),
             ),
 
-            // --- KHUNG HIỂN THỊ ẢNH (LOGIC MỚI) ---
+            // Image
             if (item['image_url'] != null)
               Container(
                 height: 250, width: double.infinity,
-                margin: const EdgeInsets.symmetric(horizontal: 16),
+                color: Colors.grey[200],
+                child: _loadingImage
+                    ? const Center(child: CircularProgressIndicator())
+                    : _imageBytes != null
+                    ? Image.memory(_imageBytes!, fit: BoxFit.cover)
+                    : const Icon(Icons.broken_image, size: 50, color: Colors.grey),
+              ),
+
+            // Content
+            if (item['content'] != null && item['content'].toString().isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(item['content'], style: const TextStyle(fontSize: 16)),
+              ),
+
+            // Audio Player
+            if (item['audio_url'] != null)
+              Container(
+                margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(20),
+                  color: isPlaying ? Colors.teal.withOpacity(0.1) : Colors.grey[100],
+                  borderRadius: BorderRadius.circular(50),
+                  border: Border.all(color: isPlaying ? Colors.teal : Colors.transparent),
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: _isImageLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : _imageBytes != null
-                      ? Image.memory(_imageBytes!, fit: BoxFit.cover) // Hiển thị ảnh từ RAM
-                      : Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.broken_image, color: Colors.red, size: 40),
-                          const SizedBox(height: 8),
-                          Text("Lỗi tải ảnh", style: TextStyle(color: Colors.red[800], fontWeight: FontWeight.bold)),
-                          // Hiển thị lỗi nhỏ để biết nguyên nhân
-                          Text(
-                            _imageError.length > 50 ? "${_imageError.substring(0, 50)}..." : _imageError,
-                            style: const TextStyle(fontSize: 10, color: Colors.grey),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+                child: InkWell(
+                  onTap: () => widget.onPlayAudio(item['audio_url']),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: isPlaying ? Colors.teal : Colors.grey[400],
+                        child: Icon(isPlaying ? Icons.pause : Icons.play_arrow, color: Colors.white),
                       ),
-                    ),
+                      const SizedBox(width: 10),
+                      Text(isPlaying ? "Đang phát..." : "Nghe ghi âm",
+                          style: TextStyle(fontWeight: FontWeight.bold, color: isPlaying ? Colors.teal : Colors.black87)),
+                      const SizedBox(width: 10),
+                    ],
                   ),
                 ),
-              ),
-
-            if (content.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                child: Text(content, maxLines: 3, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 16, height: 1.4)),
-              ),
-
-            if (item['audio_url'] != null)
-              FutureBuilder<String?>(
-                future: _audioFuture,
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) return const SizedBox();
-                  return Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: InkWell(
-                      onTap: () => widget.onPlayAudio(snapshot.data!),
-                      borderRadius: BorderRadius.circular(50),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[100], borderRadius: BorderRadius.circular(50),
-                          border: Border.all(color: widget.currentPlayingUrl == snapshot.data ? kPrimaryColor : Colors.transparent),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(widget.currentPlayingUrl == snapshot.data ? Icons.pause : Icons.play_arrow_rounded, color: kPrimaryColor),
-                            const SizedBox(width: 8),
-                            Text("Nghe ghi âm", style: TextStyle(color: kPrimaryColor, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-
-            const SizedBox(height: 8),
+              )
           ],
         ),
       ),
@@ -463,91 +283,93 @@ class _MemoryItemCardState extends State<MemoryItemCard> {
   }
 }
 
-// =============================================================================
-// ADD MEMORY SHEET (GIỮ NGUYÊN)
-// =============================================================================
+// --- SHEET ADD MEMORY ---
 class AddMemorySheet extends StatefulWidget {
   final MemoryService memoryService;
   const AddMemorySheet({super.key, required this.memoryService});
   @override
   State<AddMemorySheet> createState() => _AddMemorySheetState();
 }
-class _AddMemorySheetState extends State<AddMemorySheet> {
-  final TextEditingController _contentController = TextEditingController();
-  File? _selectedImage;
-  File? _selectedAudio;
-  bool _isUploading = false;
 
-  Future<void> _pickImage(ImageSource source) async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: source, imageQuality: 80);
-    if (pickedFile != null) setState(() => _selectedImage = File(pickedFile.path));
+class _AddMemorySheetState extends State<AddMemorySheet> {
+  final _contentController = TextEditingController();
+  File? _image;
+  File? _audio;
+  bool _uploading = false;
+
+  Future<void> _pickImage(ImageSource src) async {
+    final file = await ImagePicker().pickImage(source: src, imageQuality: 80);
+    if (file != null) setState(() => _image = File(file.path));
   }
+
   Future<void> _pickAudio() async {
+    // Dùng FilePicker để lấy audio chuẩn
     FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.audio);
     if (result != null && result.files.single.path != null) {
-      setState(() => _selectedAudio = File(result.files.single.path!));
+      setState(() => _audio = File(result.files.single.path!));
     }
   }
+
   Future<void> _submit() async {
-    if (_selectedImage == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Cần chọn 1 bức ảnh!")));
+    if (_image == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Chưa chọn ảnh!")));
       return;
     }
-    setState(() => _isUploading = true);
+    setState(() => _uploading = true);
     try {
       await widget.memoryService.createMemory(
-        imageFile: _selectedImage!,
-        audioFile: _selectedAudio,
+        imageFile: _image!,
+        audioFile: _audio,
         content: _contentController.text,
-        tags: ["family"],
       );
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Lỗi: $e")));
     } finally {
-      if (mounted) setState(() => _isUploading = false);
+      if (mounted) setState(() => _uploading = false);
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
+      height: MediaQuery.of(context).size.height * 0.9,
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          const Text("Thêm Kỷ Niệm Mới", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: kPrimaryDark)),
+          const Text("Thêm Ký Ức", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
           Expanded(
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  InkWell(
-                    onTap: () {
-                      showModalBottomSheet(context: context, builder: (_) => Column(mainAxisSize: MainAxisSize.min, children: [
-                        ListTile(leading: const Icon(Icons.camera_alt), title: const Text('Chụp ảnh'), onTap: () { Navigator.pop(context); _pickImage(ImageSource.camera); }),
-                        ListTile(leading: const Icon(Icons.photo_library), title: const Text('Chọn ảnh'), onTap: () { Navigator.pop(context); _pickImage(ImageSource.gallery); }),
-                      ]));
-                    },
+                  GestureDetector(
+                    onTap: () => showModalBottomSheet(context: context, builder: (_) => Column(mainAxisSize: MainAxisSize.min, children: [
+                      ListTile(title: const Text("Chụp ảnh"), onTap: () { Navigator.pop(context); _pickImage(ImageSource.camera); }),
+                      ListTile(title: const Text("Thư viện"), onTap: () { Navigator.pop(context); _pickImage(ImageSource.gallery); }),
+                    ])),
                     child: Container(
                       height: 200, width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100], borderRadius: BorderRadius.circular(20),
-                        image: _selectedImage != null ? DecorationImage(image: FileImage(_selectedImage!), fit: BoxFit.cover) : null,
-                      ),
-                      child: _selectedImage == null ? const Icon(Icons.add_a_photo, size: 50, color: Colors.grey) : null,
+                      decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(10)),
+                      child: _image != null
+                          ? Image.file(_image!, fit: BoxFit.cover)
+                          : const Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.add_a_photo, size: 40), Text("Chọn ảnh")]),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  TextField(controller: _contentController, maxLines: 3, decoration: const InputDecoration(hintText: "Nhập nội dung...", border: OutlineInputBorder())),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 15),
+                  TextField(controller: _contentController, maxLines: 3, decoration: const InputDecoration(border: OutlineInputBorder(), hintText: "Nội dung...")),
+                  const SizedBox(height: 15),
                   ListTile(
-                    tileColor: Colors.blue[50], leading: const Icon(Icons.mic, color: Colors.blue),
-                    title: Text(_selectedAudio == null ? "Thêm giọng nói" : "Đã chọn tệp"),
-                    trailing: _selectedAudio != null ? const Icon(Icons.check, color: Colors.green) : const Icon(Icons.add),
+                    tileColor: Colors.blue[50],
+                    leading: const Icon(Icons.mic, color: Colors.blue),
+                    title: Text(_audio == null ? "Chọn Audio (MP3/M4A)" : "Audio đã chọn"),
+                    subtitle: _audio != null ? Text(_audio!.path.split('/').last) : null,
+                    trailing: _audio != null
+                        ? IconButton(icon: const Icon(Icons.close, color: Colors.red), onPressed: () => setState(() => _audio = null))
+                        : const Icon(Icons.add),
                     onTap: _pickAudio,
-                  ),
+                  )
                 ],
               ),
             ),
@@ -555,20 +377,18 @@ class _AddMemorySheetState extends State<AddMemorySheet> {
           SizedBox(
             width: double.infinity, height: 50,
             child: ElevatedButton(
-              onPressed: _isUploading ? null : _submit,
+              onPressed: _uploading ? null : _submit,
               style: ElevatedButton.styleFrom(backgroundColor: kPrimaryColor),
-              child: _isUploading ? const CircularProgressIndicator(color: Colors.white) : const Text("LƯU", style: TextStyle(color: Colors.white)),
+              child: _uploading ? const CircularProgressIndicator(color: Colors.white) : const Text("ĐĂNG", style: TextStyle(color: Colors.white)),
             ),
-          ),
+          )
         ],
       ),
     );
   }
 }
 
-// =============================================================================
-// EDIT MEMORY SHEET (GIỮ NGUYÊN)
-// =============================================================================
+// --- SHEET EDIT ---
 class EditMemorySheet extends StatefulWidget {
   final MemoryService memoryService;
   final Map<String, dynamic> item;
@@ -576,49 +396,44 @@ class EditMemorySheet extends StatefulWidget {
   @override
   State<EditMemorySheet> createState() => _EditMemorySheetState();
 }
+
 class _EditMemorySheetState extends State<EditMemorySheet> {
-  final TextEditingController _contentController = TextEditingController();
-  bool _isUpdating = false;
+  final _controller = TextEditingController();
+  bool _loading = false;
   @override
   void initState() {
     super.initState();
-    _contentController.text = widget.item['content'] ?? "";
-  }
-  Future<void> _submitUpdate() async {
-    setState(() => _isUpdating = true);
-    try {
-      await widget.memoryService.updateMemory(id: widget.item['id'], content: _contentController.text);
-      if (mounted) Navigator.pop(context, true);
-    } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Lỗi: $e")));
-    } finally {
-      if (mounted) setState(() => _isUpdating = false);
-    }
+    _controller.text = widget.item['content'] ?? "";
   }
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
-      padding: EdgeInsets.only(top: 20, left: 20, right: 20, bottom: MediaQuery.of(context).viewInsets.bottom + 20),
+      padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 20),
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text("Sửa Nội Dung", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 20),
-          TextField(controller: _contentController, maxLines: 4, decoration: const InputDecoration(border: OutlineInputBorder())),
-          const SizedBox(height: 20),
+          const Text("Sửa nội dung", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          const SizedBox(height: 15),
+          TextField(controller: _controller, maxLines: 3, decoration: const InputDecoration(border: OutlineInputBorder())),
+          const SizedBox(height: 15),
           SizedBox(
-            width: double.infinity, height: 50,
+            width: double.infinity, height: 45,
             child: ElevatedButton(
-              onPressed: _isUpdating ? null : _submitUpdate,
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-              child: _isUpdating ? const CircularProgressIndicator(color: Colors.white) : const Text("CẬP NHẬT", style: TextStyle(color: Colors.white)),
+              onPressed: _loading ? null : () async {
+                setState(() => _loading = true);
+                try {
+                  await widget.memoryService.updateMemory(id: widget.item['id'], content: _controller.text);
+                  if(mounted) Navigator.pop(context, true);
+                } catch(e) {
+                  setState(() => _loading = false);
+                }
+              },
+              child: _loading ? const CircularProgressIndicator() : const Text("Cập nhật"),
             ),
-          ),
+          )
         ],
       ),
     );
   }
 }
-
-

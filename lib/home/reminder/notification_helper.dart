@@ -1,38 +1,39 @@
 import 'dart:async';
-import 'dart:typed_data'; // [QUAN TRỌNG] Thêm dòng này để dùng Int64List
+import 'dart:typed_data'; // Cần cho rung (Int64List)
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_tts/flutter_tts.dart';
-import 'package:timezone/data/latest.dart' as tz;
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 class NotificationHelper {
   static final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
-  static final FlutterTts _tts = FlutterTts();
 
-  // Stream để main.dart lắng nghe
+  // Stream để main.dart lắng nghe và điều hướng
   static final StreamController<String?> onNotificationClick = StreamController<String?>.broadcast();
 
   // --- 1. KHỞI TẠO ---
   static Future<void> init() async {
     tz.initializeTimeZones();
+    try {
+      final String currentTimeZone = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(currentTimeZone));
+    } catch (e) {
+      tz.setLocalLocation(tz.getLocation('Asia/Ho_Chi_Minh'));
+    }
 
+    // Cài đặt Android
     const AndroidInitializationSettings androidSettings =
     AndroidInitializationSettings('@mipmap/ic_launcher');
 
+    // Cài đặt iOS
     const DarwinInitializationSettings iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
-      requestBadgePermission: true,
       requestSoundPermission: true,
     );
 
-    const InitializationSettings settings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-    );
-
     await _notifications.initialize(
-      settings,
+      InitializationSettings(android: androidSettings, iOS: iosSettings),
       onDidReceiveNotificationResponse: (NotificationResponse response) {
         if (response.payload != null) {
           onNotificationClick.add(response.payload);
@@ -40,105 +41,83 @@ class NotificationHelper {
       },
     );
 
-    await _tts.setLanguage("vi-VN");
-    await _tts.setSpeechRate(0.45);
+    // Xin quyền Android 13+ (Thông báo) và 12+ (Hẹn giờ chính xác)
+    final androidImplementation = _notifications.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+
+    if (androidImplementation != null) {
+      await androidImplementation.requestNotificationsPermission();
+      await androidImplementation.requestExactAlarmsPermission();
+    }
   }
 
-  // --- 2. HẸN GIỜ ---
+  // --- 2. HẸN GIỜ (KHÔNG DÙNG MP3 RIÊNG) ---
   static Future<void> scheduleNotification({
     required int id,
     required String title,
     required String body,
     required DateTime scheduledTime,
   }) async {
-    if (scheduledTime.isBefore(DateTime.now())) return;
+    try {
+      final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
+      tz.TZDateTime tzScheduledTime = tz.TZDateTime.from(scheduledTime, tz.local);
 
-    final tzTime = tz.TZDateTime.from(scheduledTime, tz.local);
-    String payloadData = "$id|$title|$body";
+      // Xử lý logic thời gian: Nếu quá khứ < 1 phút thì vẫn báo (để tránh lag), nếu quá lâu thì bỏ
+      if (tzScheduledTime.isBefore(now)) {
+        if (now.difference(tzScheduledTime).inMinutes < 1) {
+          // Nếu vừa mới qua tức thì -> báo ngay sau 3 giây
+          tzScheduledTime = now.add(const Duration(seconds: 3));
+        } else {
+          debugPrint("⚠️ Bỏ qua ID $id vì là quá khứ.");
+          return;
+        }
+      }
 
-    // [SỬA LỖI] Dùng 'final' thay vì 'const' vì Int64List được tạo lúc chạy
-    final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'alarm_channel_final_v2',
-      'Báo thức thuốc & Việc',
-      channelDescription: 'Kênh báo thức tự động mở màn hình',
+      // Chuỗi payload: "ID|Tiêu đề|Nội dung"
+      String payloadData = "$id|$title|$body";
 
-      importance: Importance.max,
-      priority: Priority.max,
+      // Cấu hình thông báo Android
+      final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+        'channel_nhac_viec_v1', // ID Kênh
+        'Nhắc nhở thuốc & việc', // Tên kênh
+        channelDescription: 'Kênh báo thức quan trọng',
 
-      sound: const RawResourceAndroidNotificationSound('alarm_sound'),
-      playSound: true,
-      audioAttributesUsage: AudioAttributesUsage.alarm,
+        // --- CẤU HÌNH QUAN TRỌNG ĐỂ BUNG MÀN HÌNH ---
+        importance: Importance.max,
+        priority: Priority.max,
+        fullScreenIntent: true, // Yêu cầu bung màn hình (Cần quyền trong Manifest)
 
-      fullScreenIntent: true,
+        // Âm thanh & Rung
+        playSound: true, // Dùng tiếng "Ting ting" mặc định của hệ thống
+        enableVibration: true,
+        vibrationPattern: Int64List.fromList([0, 1000, 1000, 1000, 1000]), // Rung mạnh: Nghỉ-Rung-Nghỉ-Rung
 
-      enableVibration: true,
-      // [SỬA LỖI] Int64List.fromList giờ đã hoạt động nhờ import ở trên
-      vibrationPattern: Int64List.fromList([0, 1000, 500, 1000, 500, 1000]),
+        // Loại thông báo
+        category: AndroidNotificationCategory.alarm,
+        visibility: NotificationVisibility.public,
+        timeoutAfter: 60000, // Tự tắt thông báo sau 1 phút nếu không ai bấm
+      );
 
-      color: Colors.red,
-      ledColor: Colors.red,
-      enableLights: true,
-      timeoutAfter: 300000,
-    );
+      await _notifications.zonedSchedule(
+        id,
+        title,
+        body,
+        tzScheduledTime,
+        NotificationDetails(android: androidDetails),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.dateAndTime,
+        payload: payloadData,
+      );
 
-    // [SỬA LỖI] Bỏ const ở đây luôn vì androidDetails không còn là const
-    final NotificationDetails platformDetails = NotificationDetails(android: androidDetails);
+      debugPrint("✅ Đã hẹn giờ ID $id lúc $tzScheduledTime");
 
-    await _notifications.zonedSchedule(
-      id,
-      title,
-      body,
-      tzTime,
-      platformDetails,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.dateAndTime,
-      payload: payloadData,
-    );
-
-    _scheduleMissedAlert(id, title, tzTime.add(const Duration(minutes: 15)));
+    } catch (e) {
+      debugPrint("❌ Lỗi hẹn giờ: $e");
+    }
   }
 
-  // --- 3. BÁO THỨC DỰ PHÒNG ---
-  static Future<void> _scheduleMissedAlert(int originId, String originTitle, tz.TZDateTime alertTime) async {
-    int alertId = originId + 100000;
-    String payloadData = "$originId|CẢNH BÁO QUÊN THUỐC|Bác chưa xác nhận uống $originTitle. Xin hãy kiểm tra ngay!";
-
-    // [SỬA LỖI] Dùng final thay vì const cho an toàn
-    final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'alert_channel_final_v2',
-      'Cảnh báo khẩn cấp',
-      importance: Importance.max,
-      priority: Priority.high,
-      fullScreenIntent: true,
-      sound: const RawResourceAndroidNotificationSound('alarm_sound'),
-      audioAttributesUsage: AudioAttributesUsage.alarm,
-      color: Colors.red,
-    );
-
-    await _notifications.zonedSchedule(
-      alertId,
-      "KHẨN CẤP: CHƯA XÁC NHẬN",
-      "Bác ơi, hãy vào xác nhận uống thuốc $originTitle ngay!",
-      alertTime,
-      NotificationDetails(android: androidDetails),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      payload: payloadData,
-    );
-  }
-
-  // --- 4. HỦY BÁO THỨC ---
-  static Future<void> cancel(int id) async {
-    await _notifications.cancel(id);
-    await _notifications.cancel(id + 100000);
-  }
-
-  static Future<void> cancelAll() async {
-    await _notifications.cancelAll();
-  }
-
-  static Future<void> stopSpeaking() async {
-    await _tts.stop();
-  }
+  // --- 3. HỦY ---
+  static Future<void> cancel(int id) async => await _notifications.cancel(id);
+  static Future<void> cancelAll() async => await _notifications.cancelAll();
 }

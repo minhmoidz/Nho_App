@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:gioapp/home/reminder/reminder_api_service.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:permission_handler/permission_handler.dart'; // Xin quyền
+import 'package:permission_handler/permission_handler.dart';
 
-// Import 2 file helper của bạn
-import 'reminder_api_service.dart';
+import 'local_storage.dart';
 import 'notification_helper.dart';
 
+
 class ReminderScreen extends StatefulWidget {
-  // Biến này nhận ID công việc nếu người dùng mở App từ thanh thông báo
   final String? notificationPayload;
 
   const ReminderScreen({Key? key, this.notificationPayload}) : super(key: key);
@@ -17,24 +17,18 @@ class ReminderScreen extends StatefulWidget {
   State<ReminderScreen> createState() => _ReminderScreenState();
 }
 
-class _ReminderScreenState extends State<ReminderScreen> {
-  // --- CẤU HÌNH GIAO DIỆN (Màu sắc tương phản cao) ---
-  final Color _primaryColor = const Color(0xFF0D47A1); // Xanh dương đậm
-  final Color _accentColor = const Color(0xFFE3F2FD);  // Xanh nhạt nền
-  final Color _deleteColor = const Color(0xFFD32F2F);  // Đỏ đậm
-  final Color _textColor = const Color(0xFF212121);    // Đen đậm
-
-  // --- SỐ ĐIỆN THOẠI NGƯỜI THÂN (Cần cấu hình) ---
-  // Trong thực tế, bạn nên lấy số này từ SharedPreferences hoặc Database
-  final String _contactPhone = "0912345678";
+class _ReminderScreenState extends State<ReminderScreen> with WidgetsBindingObserver {
+  // --- MÀU SẮC (Tương phản cao cho người già) ---
+  final Color _primaryColor = const Color(0xFF0D47A1); // Xanh đậm
+  final Color _accentColor = const Color(0xFFE3F2FD);  // Xanh nhạt
+  final Color _redColor = const Color(0xFFD32F2F);     // Đỏ
 
   bool _isLoading = false;
-  List<dynamic> _reminders = [];
+  List<dynamic> _reminders = []; // Danh sách việc
 
-  // Cấu hình Giọng nói (TTS)
   final FlutterTts _flutterTts = FlutterTts();
 
-  // Controllers nhập liệu
+  // Controllers cho Modal Thêm/Sửa
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
   DateTime? _selectedDateTime;
@@ -43,288 +37,150 @@ class _ReminderScreenState extends State<ReminderScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this); // Để lắng nghe khi app mở lại từ background
     _initTts();
-    _checkPermissions(); // Xin quyền SMS
-    _fetchReminders(); // Tải dữ liệu
 
-    // Kiểm tra nếu mở app từ thông báo
-    if (widget.notificationPayload != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _handleNotificationClick(widget.notificationPayload!);
-      });
-    }
-  }
-
-  // Xin quyền gửi SMS và Thông báo
-  Future<void> _checkPermissions() async {
-    await Permission.sms.request();
-    await Permission.notification.request();
-  }
-
-  // --- CẤU HÌNH GIỌNG ĐỌC ---
-  Future<void> _initTts() async {
-    await _flutterTts.setLanguage("vi-VN");
-    await _flutterTts.setSpeechRate(0.45); // Đọc chậm rãi
-    await _flutterTts.setVolume(1.0);
-  }
-
-  Future<void> _speak(String text) async {
-    if (text.isNotEmpty) {
-      await _flutterTts.stop();
-      await _flutterTts.speak(text);
-    }
+    // BƯỚC 1: XIN QUYỀN VÀ LOAD DỮ LIỆU
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkPermissionsAndFetch();
+    });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _flutterTts.stop();
     _titleController.dispose();
     _descController.dispose();
-    _flutterTts.stop();
     super.dispose();
   }
 
-  // --- 1. TẢI DỮ LIỆU & ĐỒNG BỘ BÁO THỨC ---
-  Future<void> _fetchReminders() async {
+  // --- A. CẤU HÌNH BAN ĐẦU ---
+
+  Future<void> _initTts() async {
+    await _flutterTts.setLanguage("vi-VN");
+    await _flutterTts.setSpeechRate(0.5); // Đọc chậm
+    await _flutterTts.setVolume(1.0);
+  }
+
+  Future<void> _checkPermissionsAndFetch() async {
+    // Xin quyền Thông báo
+    if (await Permission.notification.isDenied) {
+      await Permission.notification.request();
+    }
+    // Xin quyền Báo thức chính xác (Android 12+)
+    if (await Permission.scheduleExactAlarm.isDenied) {
+      await Permission.scheduleExactAlarm.request();
+    }
+
+    // Gọi hàm load dữ liệu thông minh
+    _loadDataOfflineFirst();
+  }
+
+  // --- B. LOGIC OFFLINE FIRST (CỐT LÕI) ---
+
+  Future<void> _loadDataOfflineFirst() async {
     if (!mounted) return;
     setState(() => _isLoading = true);
-    try {
-      final data = await ReminderApiService.getReminders();
 
-      // Sắp xếp: Việc chưa làm lên đầu -> Sắp theo thời gian
-      data.sort((a, b) {
-        bool aDone = a['is_completed'] ?? false;
-        bool bDone = b['is_completed'] ?? false;
-        if (aDone != bDone) return aDone ? 1 : -1;
-
-        DateTime aTime = DateTime.tryParse(a['remind_at']) ?? DateTime.now();
-        DateTime bTime = DateTime.tryParse(b['remind_at']) ?? DateTime.now();
-        return aTime.compareTo(bTime);
+    // 1. Load từ Local Storage trước (Hiển thị ngay lập tức)
+    List<dynamic> localData = await LocalStorage.getReminders();
+    if (localData.isNotEmpty) {
+      debugPrint("📂 Đã load ${localData.length} việc từ bộ nhớ máy.");
+      setState(() {
+        _reminders = _sortData(localData);
+        _isLoading = false; // Tắt loading ngay để người dùng xem được
       });
+      // Cài đặt báo thức ngay (đề phòng không có mạng)
+      _scheduleRemindersToSystem(localData);
+    }
 
-      setState(() => _reminders = data);
+    // 2. Gọi API để đồng bộ dữ liệu mới nhất
+    try {
+      final serverData = await ReminderApiService.getReminders();
 
-      // Tự động cài lại báo thức để đảm bảo không bị lỡ
-      _rescheduleAllAlarms(data);
+      if (serverData.isNotEmpty) {
+        debugPrint("☁️ Đã đồng bộ ${serverData.length} việc từ Server.");
 
+        // Cập nhật UI
+        setState(() => _reminders = _sortData(serverData));
+
+        // Lưu đè vào Local Storage để lần sau dùng
+        await LocalStorage.saveReminders(serverData);
+
+        // Cài đặt lại báo thức theo dữ liệu mới nhất
+        _scheduleRemindersToSystem(serverData);
+      }
     } catch (e) {
-      _showMsg('Lỗi tải dữ liệu: $e', isError: true);
+      debugPrint("⚠️ Lỗi mạng: $e. Đang dùng dữ liệu Offline.");
+      if (_reminders.isEmpty) {
+        _showMsg("Không có mạng và chưa có dữ liệu cũ.", isError: true);
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  void _rescheduleAllAlarms(List<dynamic> reminders) {
-    final now = DateTime.now();
-    for (var item in reminders) {
-      bool isCompleted = item['is_completed'] ?? false;
-      DateTime? remindAt = DateTime.tryParse(item['remind_at'] ?? '');
-      int id = item['id'];
-      String title = item['title'] ?? 'Nhắc nhở';
-      String desc = item['description'] ?? '';
+  // Hàm sắp xếp: Chưa làm lên đầu -> Theo thời gian
+  List<dynamic> _sortData(List<dynamic> data) {
+    data.sort((a, b) {
+      bool aDone = a['is_completed'] ?? false;
+      bool bDone = b['is_completed'] ?? false;
+      if (aDone != bDone) return aDone ? 1 : -1;
 
-      // Chỉ hẹn giờ nếu: Chưa xong VÀ Thời gian ở tương lai
-      if (!isCompleted && remindAt != null && remindAt.isAfter(now)) {
-        NotificationHelper.scheduleNotification(
+      DateTime aTime = DateTime.tryParse(a['remind_at'] ?? '') ?? DateTime.now();
+      DateTime bTime = DateTime.tryParse(b['remind_at'] ?? '') ?? DateTime.now();
+      return aTime.compareTo(bTime);
+    });
+    return data;
+  }
+
+  // Hàm cài đặt báo thức vào hệ điều hành
+  Future<void> _scheduleRemindersToSystem(List<dynamic> data) async {
+    await NotificationHelper.cancelAll(); // Xóa sạch cái cũ
+
+    final now = DateTime.now();
+    int count = 0;
+
+    for (var item in data) {
+      bool isCompleted = item['is_completed'] ?? false;
+      DateTime? remindAt = DateTime.tryParse(item['remind_at'] ?? '')?.toLocal();
+      int id = item['id'];
+
+      // Chỉ hẹn giờ nếu: Có giờ + Chưa xong + Là tương lai
+      if (remindAt != null && !isCompleted && remindAt.isAfter(now)) {
+        await NotificationHelper.scheduleNotification(
           id: id,
-          title: "Bác ơi! Đến giờ uống thuốc/làm việc: $title",
-          body: desc.isNotEmpty ? desc : "Chạm vào để xác nhận đã uống.",
+          title: "Bác ơi! Đến giờ: ${item['title']}",
+          body: item['description'] ?? "Chạm vào để nghe nội dung",
           scheduledTime: remindAt,
         );
+        count++;
       }
     }
+    debugPrint("⏰ Đã cài đặt $count báo thức.");
   }
 
-  // --- 2. XỬ LÝ KHI MỞ THÔNG BÁO (LOGIC QUAN TRỌNG) ---
-  void _handleNotificationClick(String payloadId) {
-    int id = int.tryParse(payloadId) ?? -1;
-    if (id == -1) return;
-
-    // Tìm công việc trong danh sách
-    final item = _reminders.firstWhere((e) => e['id'] == id, orElse: () => null);
-
-    if (item != null && item['is_completed'] == false) {
-      // Hiện bảng xác nhận to
-      _showMedicineConfirmation(item);
-    }
-  }
-
-  // Hộp thoại xác nhận KHỔNG LỒ
-  void _showMedicineConfirmation(dynamic item) {
-    String title = item['title'];
-    _speak("Bác ơi, bác đã uống $title chưa ạ? Xin hãy xác nhận.");
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFFFFF9C4), // Vàng nhạt
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Row(
-            children: [
-              const Icon(Icons.medication, color: Colors.red, size: 40),
-              const SizedBox(width: 10),
-              Expanded(child: Text("XÁC NHẬN: ${title.toUpperCase()}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20))),
-            ],
-          ),
-          content: const Text(
-            "Bác đã uống thuốc đúng giờ chưa?",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          actionsAlignment: MainAxisAlignment.spaceEvenly,
-          actions: [
-            // NÚT CHƯA / QUÊN
-            Column(
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _handleMissedDose(item); // Xử lý khi chưa uống
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  ),
-                  child: const Icon(Icons.close, size: 40, color: Colors.white),
-                ),
-                const SizedBox(height: 5),
-                const Text("CHƯA", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ],
-            ),
-            // NÚT ĐÃ UỐNG
-            Column(
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _toggleStatus(item['id'], false); // Đánh dấu hoàn thành
-                    _speak("Tuyệt vời, chúc bác mạnh khỏe!");
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  ),
-                  child: const Icon(Icons.check, size: 40, color: Colors.white),
-                ),
-                const SizedBox(height: 5),
-                const Text("ĐÃ UỐNG", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ],
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // Xử lý khi bỏ qua / quên -> Gửi SMS
-  Future<void> _handleMissedDose(dynamic item) async {
-    _speak("Cháu sẽ nhắn tin cho người nhà ngay để hỗ trợ bác.");
-
-    String message = "KHẨN CẤP: Bố/Mẹ chưa uống thuốc '${item['title']}' lúc ${DateFormat('HH:mm').format(DateTime.now())}. Xin hãy gọi kiểm tra!";
-
-  }
-
-  // --- 3. CÁC CHỨC NĂNG CRUD (LƯU, XÓA, UPDATE) ---
-
-  Future<void> _saveReminder() async {
-    if (_titleController.text.trim().isEmpty) {
-      _speak("Bác chưa nhập tên công việc");
-      return;
-    }
-    if (_selectedDateTime == null) {
-      _speak("Bác chưa chọn giờ nhắc");
-      return;
-    }
-
-    Navigator.pop(context); // Đóng modal
-    setState(() => _isLoading = true);
-
-    try {
-      int targetId = 0;
-      if (_editingId == null) {
-        // Tạo mới
-        final newReminder = await ReminderApiService.createReminder(
-          title: _titleController.text.trim(),
-          description: _descController.text.trim(),
-          remindAt: _selectedDateTime!,
-        );
-        targetId = newReminder['id'] ?? DateTime.now().millisecondsSinceEpoch % 100000;
-        _showMsg('Đã thêm việc mới');
-      } else {
-        // Cập nhật
-        targetId = _editingId!;
-        await ReminderApiService.updateReminder(
-          id: targetId,
-          title: _titleController.text.trim(),
-          description: _descController.text.trim(),
-          remindAt: _selectedDateTime!,
-          isCompleted: false,
-        );
-        _showMsg('Đã cập nhật xong');
-      }
-
-      // Cài báo thức
-      if (_selectedDateTime!.isAfter(DateTime.now())) {
-        await NotificationHelper.cancel(targetId);
-        await NotificationHelper.scheduleNotification(
-          id: targetId,
-          title: "Bác ơi! Đến giờ ${_titleController.text}",
-          body: _descController.text.isNotEmpty ? _descController.text : "Chạm vào để xác nhận.",
-          scheduledTime: _selectedDateTime!,
-        );
-      }
-
-      _cleanForm();
-      _fetchReminders();
-    } catch (e) {
-      setState(() => _isLoading = false);
-      _showMsg("Lỗi khi lưu: $e", isError: true);
-    }
-  }
-
-  Future<void> _deleteReminder(int id) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('XÓA VIỆC NÀY?', style: TextStyle(color: Colors.red)),
-        content: const Text('Bác có chắc chắn muốn xóa không?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('KHÔNG')),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('XÓA NGAY', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      if (_editingId != null && mounted) Navigator.pop(context);
-      setState(() => _isLoading = true);
-      try {
-        await ReminderApiService.deleteReminder(id);
-        await NotificationHelper.cancel(id); // Hủy báo thức
-        _showMsg('Đã xóa xong');
-        _fetchReminders();
-      } catch (e) {
-        setState(() => _isLoading = false);
-        _showMsg("Lỗi: $e", isError: true);
-      }
-    }
-  }
+  // --- C. CÁC TÁC VỤ: THÊM / SỬA / XÓA / CHECK ---
 
   Future<void> _toggleStatus(int id, bool currentStatus) async {
+    // 1. Cập nhật UI ngay (Optimistic Update)
     final index = _reminders.indexWhere((r) => r['id'] == id);
     if (index == -1) return;
-    final item = _reminders[index];
 
     bool newStatus = !currentStatus;
-    setState(() => _reminders[index]['is_completed'] = newStatus);
+    setState(() {
+      _reminders[index]['is_completed'] = newStatus;
+    });
 
+    // 2. Cập nhật Local Storage ngay lập tức (Để lỡ tắt app vẫn nhớ)
+    await LocalStorage.saveReminders(_reminders);
+
+    // 3. Xử lý Báo thức & Server
     try {
+      final item = _reminders[index];
+
+      // Gọi API
       await ReminderApiService.updateReminderStatus(
         id: id,
         isCompleted: newStatus,
@@ -333,105 +189,149 @@ class _ReminderScreenState extends State<ReminderScreen> {
         currentRemindAt: item['remind_at'] ?? DateTime.now().toIso8601String(),
       );
 
+      // Xử lý báo thức
       if (newStatus) {
-        await NotificationHelper.cancel(id); // Xong rồi thì tắt báo thức
+        await NotificationHelper.cancel(id); // Xong rồi thì tắt chuông
+        _speak("Đã xong! Bác giỏi quá.");
       } else {
-        // Bật lại nếu chưa xong
-        DateTime? t = DateTime.tryParse(item['remind_at'] ?? '');
+        // Nếu bỏ tích (chưa xong) -> Cài lại báo thức
+        DateTime? t = DateTime.tryParse(item['remind_at'] ?? '')?.toLocal();
         if (t != null && t.isAfter(DateTime.now())) {
-          NotificationHelper.scheduleNotification(
+          await NotificationHelper.scheduleNotification(
             id: id,
-            title: "Bác ơi! Đến giờ ${item['title']}",
-            body: item['description'] ?? "Chạm vào để xác nhận.",
+            title: "Bác ơi! Đến giờ: ${item['title']}",
+            body: item['description'] ?? "",
             scheduledTime: t,
           );
+          _speak("Đã đặt lại nhắc nhở.");
         }
       }
-      _fetchReminders();
+
+      // Sắp xếp lại danh sách
+      setState(() {
+        _reminders = _sortData(_reminders);
+      });
+
     } catch (e) {
-      setState(() => _reminders[index]['is_completed'] = currentStatus);
-      _showMsg('Lỗi mạng!', isError: true);
+      // Nếu lỗi mạng -> Không cần revert UI vì Local đã lưu rồi, lần sau có mạng tính sau
+      debugPrint("Lỗi sync server: $e");
     }
   }
 
-  // --- 4. GIAO DIỆN & HELPER ---
+  Future<void> _saveReminder() async {
+    if (_titleController.text.trim().isEmpty) {
+      _speak("Bác chưa nhập tên việc");
+      return;
+    }
+    if (_selectedDateTime == null) {
+      _speak("Bác chưa chọn giờ");
+      return;
+    }
 
-  void _cleanForm() {
-    _titleController.clear();
-    _descController.clear();
-    _selectedDateTime = null;
-    _editingId = null;
+    Navigator.pop(context); // Đóng modal
+    setState(() => _isLoading = true);
+
+    try {
+      if (_editingId == null) {
+        // THÊM MỚI
+        await ReminderApiService.createReminder(
+          title: _titleController.text.trim(),
+          description: _descController.text.trim(),
+          remindAt: _selectedDateTime!,
+        );
+        _showMsg("Đã thêm việc mới");
+      } else {
+        // CẬP NHẬT
+        await ReminderApiService.updateReminder(
+          id: _editingId!,
+          title: _titleController.text.trim(),
+          description: _descController.text.trim(),
+          remindAt: _selectedDateTime!,
+          isCompleted: false, // Sửa lại thì coi như chưa làm
+        );
+        _showMsg("Đã cập nhật xong");
+      }
+
+      // Quan trọng: Load lại để đồng bộ Server -> Local -> Alarm
+      _cleanForm();
+      _loadDataOfflineFirst();
+
+    } catch (e) {
+      setState(() => _isLoading = false);
+      _showMsg("Lỗi lưu: $e", isError: true);
+    }
   }
 
-  void _showMsg(String message, {bool isError = false}) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message, style: const TextStyle(fontSize: 18)),
-        backgroundColor: isError ? Colors.red : Colors.green[700],
+  Future<void> _deleteReminder(int id) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('XÓA VIỆC?', style: TextStyle(color: Colors.red)),
+        content: const Text('Bác chắc chắn muốn xóa không?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('KHÔNG')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('XÓA', style: TextStyle(color: Colors.white)),
+          ),
+        ],
       ),
     );
+
+    if (confirm == true) {
+      if (_editingId != null) Navigator.pop(context); // Đóng modal
+      setState(() => _isLoading = true);
+
+      try {
+        await ReminderApiService.deleteReminder(id);
+
+        // Xóa trong Local List & Local Storage luôn cho nhanh
+        _reminders.removeWhere((r) => r['id'] == id);
+        await LocalStorage.saveReminders(_reminders);
+        await NotificationHelper.cancel(id); // Hủy báo thức
+
+        setState(() => _isLoading = false);
+        _showMsg("Đã xóa xong");
+      } catch (e) {
+        setState(() => _isLoading = false);
+        _showMsg("Lỗi xóa: $e", isError: true);
+      }
+    }
   }
 
-  Future<void> _pickDateTime() async {
-    final now = DateTime.now();
-    final date = await showDatePicker(
-      context: context,
-      initialDate: _selectedDateTime ?? now,
-      firstDate: DateTime(now.year, now.month, now.day),
-      lastDate: DateTime(now.year + 5),
-      locale: const Locale("vi", "VN"),
-      helpText: "CHỌN NGÀY",
-      builder: (context, child) => Transform.scale(scale: 1.1, child: child!),
-    );
-    if (date == null) return;
+  // --- D. GIAO DIỆN (UI) ---
 
-    if (!mounted) return;
-    final time = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(_selectedDateTime ?? now),
-      helpText: "CHỌN GIỜ",
-      builder: (context, child) => Transform.scale(scale: 1.1, child: child!),
-    );
-    if (time == null) return;
-
-    setState(() {
-      _selectedDateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-    });
-  }
-
-  // UI Build
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        toolbarHeight: 90,
+        toolbarHeight: 80,
         title: const Column(
           children: [
             Text('NHẮC THUỐC & VIỆC', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            SizedBox(height: 4),
-            Text('(Bác nhớ kiểm tra hàng ngày nhé)', style: TextStyle(fontSize: 16)),
+            Text('(Dữ liệu được lưu trong máy)', style: TextStyle(fontSize: 14)),
           ],
         ),
         centerTitle: true,
         backgroundColor: _primaryColor,
         foregroundColor: Colors.white,
       ),
-      body: _isLoading && _reminders.isEmpty
-          ? Center(child: CircularProgressIndicator(color: _primaryColor))
+
+      body: _reminders.isEmpty && !_isLoading
+          ? _buildEmptyState()
           : RefreshIndicator(
-        onRefresh: _fetchReminders,
-        child: _reminders.isEmpty
-            ? _buildEmptyState()
-            : ListView.builder(
+        onRefresh: _loadDataOfflineFirst,
+        child: ListView.builder(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),
           itemCount: _reminders.length,
           itemBuilder: (context, index) => _buildElderlyCard(_reminders[index]),
         ),
       ),
+
       floatingActionButton: SizedBox(
-        width: 80, height: 80,
+        width: 75, height: 75,
         child: FloatingActionButton(
           onPressed: () => _showModal(),
           backgroundColor: _primaryColor,
@@ -450,7 +350,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
           const SizedBox(height: 20),
           Text('Hôm nay rảnh rỗi!', style: TextStyle(fontSize: 22, color: Colors.grey[600])),
           const SizedBox(height: 10),
-          Text('Bấm dấu (+) để thêm nhắc nhở', style: TextStyle(fontSize: 18, color: _primaryColor)),
+          Text('Bấm dấu (+) để thêm', style: TextStyle(fontSize: 18, color: _primaryColor)),
         ],
       ),
     );
@@ -460,7 +360,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
     final bool isCompleted = item['is_completed'] ?? false;
     final String title = item['title'] ?? 'Không tên';
     final String desc = item['description'] ?? '';
-    final DateTime? dt = DateTime.tryParse(item['remind_at'] ?? '');
+    final DateTime? dt = DateTime.tryParse(item['remind_at'] ?? '')?.toLocal();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
@@ -480,6 +380,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
+              // CHECKBOX TO
               Transform.scale(
                 scale: 1.8,
                 child: Checkbox(
@@ -490,6 +391,8 @@ class _ReminderScreenState extends State<ReminderScreen> {
                 ),
               ),
               const SizedBox(width: 15),
+
+              // NỘI DUNG
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -499,24 +402,32 @@ class _ReminderScreenState extends State<ReminderScreen> {
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: isCompleted ? Colors.grey : _textColor,
+                        color: isCompleted ? Colors.grey : Colors.black87,
                         decoration: isCompleted ? TextDecoration.lineThrough : null,
                       ),
                     ),
                     if (dt != null)
                       Padding(
                         padding: const EdgeInsets.only(top: 8),
-                        child: Text(
-                          DateFormat('HH:mm - dd/MM').format(dt),
-                          style: TextStyle(color: _primaryColor, fontWeight: FontWeight.bold, fontSize: 18),
+                        child: Row(
+                          children: [
+                            Icon(Icons.alarm, size: 22, color: _primaryColor),
+                            const SizedBox(width: 8),
+                            Text(
+                              DateFormat('HH:mm - dd/MM').format(dt),
+                              style: TextStyle(color: _primaryColor, fontWeight: FontWeight.bold, fontSize: 18),
+                            ),
+                          ],
                         ),
                       ),
                   ],
                 ),
               ),
+
+              // NÚT ĐỌC
               IconButton(
                 icon: const Icon(Icons.volume_up, size: 40, color: Colors.deepOrange),
-                onPressed: () => _speak("Việc cần làm: $title. ${desc.isNotEmpty ? "Ghi chú: $desc" : ""}"),
+                onPressed: () => _speak("Việc cần làm: $title. $desc"),
               )
             ],
           ),
@@ -525,13 +436,61 @@ class _ReminderScreenState extends State<ReminderScreen> {
     );
   }
 
+  // --- E. CÁC HÀM HỖ TRỢ & MODAL ---
+
+  void _speak(String text) async {
+    await _flutterTts.stop();
+    await _flutterTts.speak(text);
+  }
+
+  void _showMsg(String msg, {bool isError = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(msg, style: const TextStyle(fontSize: 18)),
+      backgroundColor: isError ? _redColor : Colors.green[700],
+    ));
+  }
+
+  void _cleanForm() {
+    _titleController.clear();
+    _descController.clear();
+    _selectedDateTime = null;
+    _editingId = null;
+  }
+
+  Future<void> _pickDateTime() async {
+    final now = DateTime.now();
+    final date = await showDatePicker(
+      context: context,
+      initialDate: _selectedDateTime ?? now,
+      firstDate: DateTime(now.year, now.month, now.day),
+      lastDate: DateTime(now.year + 5),
+      helpText: "CHỌN NGÀY",
+      builder: (ctx, child) => Transform.scale(scale: 1.1, child: child!),
+    );
+    if (date == null) return;
+    if (!mounted) return;
+
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_selectedDateTime ?? now),
+      helpText: "CHỌN GIỜ",
+      builder: (ctx, child) => Transform.scale(scale: 1.1, child: child!),
+    );
+    if (time == null) return;
+
+    setState(() {
+      _selectedDateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    });
+  }
+
   void _showModal({Map<String, dynamic>? item}) {
     if (item != null) {
       _editingId = item['id'];
       _titleController.text = item['title'] ?? '';
       _descController.text = item['description'] ?? '';
       try { _selectedDateTime = DateTime.parse(item['remind_at']); } catch (_) { _selectedDateTime = DateTime.now(); }
-      _speak("Sửa công việc: ${item['title']}");
+      _speak("Sửa việc: ${item['title']}");
     } else {
       _cleanForm();
       _speak("Thêm việc mới");
@@ -540,92 +499,95 @@ class _ReminderScreenState extends State<ReminderScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => StatefulBuilder(
-        builder: (ctx, setModalState) => Container(
-          height: MediaQuery.of(context).size.height * 0.85,
-          padding: const EdgeInsets.all(24),
-          decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(child: Container(width: 60, height: 6, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)))),
-              const SizedBox(height: 20),
-              Center(child: Text(_editingId == null ? "THÊM VIỆC" : "SỬA VIỆC", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: _primaryColor))),
-              const SizedBox(height: 30),
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        height: MediaQuery.of(context).size.height * 0.85,
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(child: Container(width: 60, height: 6, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)))),
+            const SizedBox(height: 20),
+            Center(child: Text(_editingId == null ? "THÊM VIỆC" : "SỬA VIỆC", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: _primaryColor))),
+            const SizedBox(height: 30),
 
-              const Text("1. Tên thuốc / công việc", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              TextField(
-                controller: _titleController,
-                style: const TextStyle(fontSize: 22),
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-                    prefixIcon: const Icon(Icons.edit_note, size: 30),
-                    hintText: "VD: Uống thuốc huyết áp"
-                ),
+            // INPUT 1
+            const Text("1. Tên công việc", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            TextField(
+              controller: _titleController,
+              style: const TextStyle(fontSize: 22),
+              decoration: InputDecoration(
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                  prefixIcon: const Icon(Icons.edit_note, size: 30),
+                  hintText: "VD: Uống thuốc..."
               ),
-              const SizedBox(height: 20),
+            ),
+            const SizedBox(height: 20),
 
-              const Text("2. Ghi chú (nếu có)", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              TextField(
-                controller: _descController,
-                style: const TextStyle(fontSize: 20),
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-                    prefixIcon: const Icon(Icons.notes, size: 30),
-                    hintText: "VD: 2 viên màu đỏ"
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              const Text("3. Giờ nhắc", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              InkWell(
-                onTap: () async {
-                  await _pickDateTime();
-                  setModalState(() {});
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(15),
-                  decoration: BoxDecoration(color: _accentColor, borderRadius: BorderRadius.circular(15), border: Border.all(color: _primaryColor)),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.alarm, size: 30, color: Colors.blue),
-                      const SizedBox(width: 10),
-                      Text(
-                        _selectedDateTime == null ? "BẤM ĐỂ CHỌN GIỜ" : DateFormat('HH:mm - dd/MM/yyyy').format(_selectedDateTime!),
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _primaryColor),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const Spacer(),
-
-              Row(
-                children: [
-                  if (_editingId != null)
-                    Expanded(
-                      flex: 1,
-                      child: ElevatedButton(
-                        onPressed: () => _deleteReminder(_editingId!),
-                        style: ElevatedButton.styleFrom(backgroundColor: _deleteColor, padding: const EdgeInsets.symmetric(vertical: 15)),
-                        child: const Icon(Icons.delete_forever, size: 30, color: Colors.white),
-                      ),
+            // INPUT 2
+            const Text("2. Giờ nhắc", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            InkWell(
+              onTap: () => _pickDateTime(),
+              child: Container(
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(color: _accentColor, borderRadius: BorderRadius.circular(15), border: Border.all(color: _primaryColor)),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.alarm, size: 30, color: Colors.blue),
+                    const SizedBox(width: 10),
+                    Text(
+                      _selectedDateTime == null ? "BẤM CHỌN GIỜ" : DateFormat('HH:mm - dd/MM/yyyy').format(_selectedDateTime!),
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _primaryColor),
                     ),
-                  if (_editingId != null) const SizedBox(width: 10),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // INPUT 3
+            const Text("3. Ghi chú (tùy chọn)", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            TextField(
+              controller: _descController,
+              style: const TextStyle(fontSize: 20),
+              decoration: InputDecoration(
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                  prefixIcon: const Icon(Icons.notes, size: 30),
+                  hintText: "VD: Màu đỏ, sau ăn"
+              ),
+            ),
+
+            const Spacer(),
+
+            Row(
+              children: [
+                if (_editingId != null)
                   Expanded(
-                    flex: 3,
+                    flex: 1,
                     child: ElevatedButton(
-                      onPressed: _saveReminder,
-                      style: ElevatedButton.styleFrom(backgroundColor: _primaryColor, padding: const EdgeInsets.symmetric(vertical: 15)),
-                      child: Text(_editingId == null ? "LƯU LẠI" : "CẬP NHẬT", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                      onPressed: () => _deleteReminder(_editingId!),
+                      style: ElevatedButton.styleFrom(backgroundColor: _redColor, padding: const EdgeInsets.symmetric(vertical: 15)),
+                      child: const Icon(Icons.delete_forever, size: 30, color: Colors.white),
                     ),
                   ),
-                ],
-              ),
-              Padding(padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom))
-            ],
-          ),
+                if (_editingId != null) const SizedBox(width: 10),
+                Expanded(
+                  flex: 3,
+                  child: ElevatedButton(
+                    onPressed: _saveReminder,
+                    style: ElevatedButton.styleFrom(backgroundColor: _primaryColor, padding: const EdgeInsets.symmetric(vertical: 15)),
+                    child: Text("LƯU LẠI", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ),
+                ),
+              ],
+            ),
+            Padding(padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom))
+          ],
         ),
       ),
     );

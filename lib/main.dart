@@ -2,37 +2,41 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:timezone/data/latest.dart' as tz; // Import timezone
 
-// --- IMPORT CÁC FILE CỦA BẠN ---
+// --- IMPORT CÁC FILE CỦA BẠN (Đảm bảo đường dẫn đúng) ---
 import 'home/home_page.dart';
-import 'home/reminder/AlarmScreen.dart';
-import 'home/reminder/notification_helper.dart';
+import 'home/reminder/AlarmScreen.dart'; // Màn hình đọc báo thức
+import 'home/reminder/notification_helper.dart'; // Helper xử lý thông báo
 import 'login/auth_service.dart';
 import 'login/login_page.dart';
 import 'login/register_page.dart';
 
-// [MỚI] Tạo Key toàn cục để điều hướng từ notification
+// [QUAN TRỌNG] Key toàn cục để điều hướng từ bất kỳ đâu (kể cả từ background)
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Khóa màn hình dọc
+  // 1. Khóa màn hình dọc (Tránh vỡ giao diện)
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
-  // Khởi tạo thông báo & TTS
-  await NotificationHelper.init();
+  // 2. Khởi tạo dữ liệu Múi giờ (Bắt buộc cho báo thức)
+  tz.initializeTimeZones();
 
-  // Khởi tạo định dạng ngày tháng tiếng Việt
+  // 3. Khởi tạo định dạng ngày tháng tiếng Việt
   await initializeDateFormatting('vi_VN', null);
+
+  // 4. Khởi tạo kênh Thông báo & TTS
+  // Hàm này phải chạy xong trước khi runApp để đảm bảo kênh lắng nghe đã sẵn sàng
+  await NotificationHelper.init();
 
   runApp(const MyApp());
 }
 
-// [THAY ĐỔI] Chuyển MyApp thành StatefulWidget để lắng nghe thông báo
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -41,20 +45,28 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   @override
   void initState() {
     super.initState();
-    // [MỚI] LẮNG NGHE SỰ KIỆN TỪ NOTIFICATION HELPER
-    // Khi đến giờ hẹn, NotificationHelper sẽ đẩy dữ liệu vào stream này
+    _setupNotificationListener();
+  }
+
+  // [LOGIC QUAN TRỌNG NHẤT]
+  // Lắng nghe sự kiện click vào thông báo hoặc sự kiện Báo thức nổ (FullScreenIntent)
+  void _setupNotificationListener() {
     NotificationHelper.onNotificationClick.stream.listen((payload) {
-      if (payload != null) {
-        // Dùng navigatorKey để đẩy màn hình AlarmScreen đè lên tất cả
-        navigatorKey.currentState?.push(
-          MaterialPageRoute(
-            builder: (context) => AlarmScreen(payload: payload),
-          ),
-        );
+      if (payload != null && payload.isNotEmpty) {
+        debugPrint("🚀 Main: Nhận được payload báo thức: $payload");
+
+        // Sử dụng navigatorKey để đẩy màn hình AlarmScreen đè lên mọi thứ
+        // Dùng addPostFrameCallback để đảm bảo UI đã vẽ xong trước khi push
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          navigatorKey.currentState?.push(
+            MaterialPageRoute(
+              builder: (context) => AlarmScreen(payload: payload),
+            ),
+          );
+        });
       }
     });
   }
@@ -62,11 +74,12 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // [MỚI] Gắn key vào đây
+      // Gắn key vào đây để điều khiển điều hướng toàn cục
       navigatorKey: navigatorKey,
 
       title: 'Nhớ App',
       debugShowCheckedModeBanner: false,
+
       theme: ThemeData(
         primarySwatch: Colors.blue,
         useMaterial3: true,
@@ -84,7 +97,8 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
       ),
-      // Hỗ trợ tiếng Việt
+
+      // Cấu hình đa ngôn ngữ (Tiếng Việt)
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
@@ -95,9 +109,10 @@ class _MyAppState extends State<MyApp> {
         Locale('en', 'US'),
       ],
 
-      // Màn hình khởi động
+      // Logic kiểm tra đăng nhập
       home: const AuthCheck(),
 
+      // Định nghĩa các route cơ bản
       routes: {
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
@@ -108,8 +123,7 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-// --- GIỮ NGUYÊN PHẦN CÒN LẠI (AuthCheck, Placeholder...) ---
-
+// --- WIDGET KIỂM TRA ĐĂNG NHẬP (GIỮ NGUYÊN) ---
 class AuthCheck extends StatefulWidget {
   const AuthCheck({super.key});
 
@@ -129,6 +143,7 @@ class _AuthCheckState extends State<AuthCheck> {
   }
 
   Future<void> _checkLoginStatus() async {
+    // Kiểm tra token/userId trong SharedPreferences
     final userId = await _authService.getUserId();
     if (mounted) {
       setState(() {
@@ -151,6 +166,7 @@ class _AuthCheckState extends State<AuthCheck> {
   }
 }
 
+// --- WIDGET PLACEHOLDER (GIỮ NGUYÊN) ---
 class KeycloakLoginPlaceholder extends StatelessWidget {
   const KeycloakLoginPlaceholder({super.key});
 

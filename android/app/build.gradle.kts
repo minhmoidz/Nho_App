@@ -11,11 +11,9 @@ android {
     ndkVersion = "27.0.12077973"
 
     compileOptions {
-        // GIỮ NGUYÊN JAVA 11 NHƯNG BẬT DESUGARING
+        // Cấu hình Java 11 và Desugaring (Hỗ trợ thư viện DateTime mới)
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
-
-        // --- THAY ĐỔI 1: Bật cờ này để sửa lỗi flutter_local_notifications ---
         isCoreLibraryDesugaringEnabled = true
     }
 
@@ -24,10 +22,9 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        // TODO: Specify your own unique Application ID
         applicationId = "com.example.gioapp"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
+
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -35,20 +32,26 @@ android {
     }
 
     buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so flutter run --release works.
+        // Cấu hình cho bản Release (Chạy khi build APK/AAB hoặc run --release)
+        getByName("release") {
+            // Dùng tạm key debug để test release. Khi up store nhớ đổi lại config này.
             signingConfig = signingConfigs.getByName("debug")
+
+            // BẬT NÉN CODE & TỐI ƯU RESOURCES
+            isMinifyEnabled = true
+            isShrinkResources = true
+
+            // NẠP FILE RULE ĐỂ KHÔNG BỊ LỖI CRASH GSON/NOTIFICATIONS
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
         }
     }
 }
 
 dependencies {
-    // --- THAY ĐỔI 2: Thêm thư viện desugar ---
+    // Thư viện hỗ trợ Desugaring (Quan trọng cho DateTime trên Android thấp)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
-    // Add these ML Kit language model dependencies
+    // Các thư viện ML Kit (Giữ nguyên của bạn)
     implementation("com.google.mlkit:text-recognition-chinese:16.0.0")
     implementation("com.google.mlkit:text-recognition-devanagari:16.0.0")
     implementation("com.google.mlkit:text-recognition-japanese:16.0.0")
@@ -61,11 +64,12 @@ flutter {
 
 configurations.all {
     resolutionStrategy {
+        // Ép dùng phiên bản activity mới để tránh xung đột
         force("androidx.activity:activity:1.9.3")
     }
 }
 
-// --- THÊM ĐOẠN NÀY ĐỂ TẮT CẢNH BÁO JAVA OBSOLETE ---
+// Tắt cảnh báo Java Obsolete cho đỡ rối mắt khi build
 tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-Xlint:-options")
 }
