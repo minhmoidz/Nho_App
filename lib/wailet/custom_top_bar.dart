@@ -181,66 +181,6 @@ class CustomTopBar extends StatelessWidget {
                     ),
                   ),
                 ),
-
-                const SizedBox(width: 14),
-
-                // Avatar với border gradient
-                GestureDetector(
-                  onTap: onAvatarTap,
-                  child: Container(
-                    padding: const EdgeInsets.all(2.5),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.blue.shade400,
-                          Colors.purple.shade400,
-                          Colors.pink.shade400,
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.blue.withOpacity(0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                      ),
-                      padding: const EdgeInsets.all(2),
-                      child: CircleAvatar(
-                        radius: 22,
-                        backgroundColor: Colors.grey.shade100,
-                        backgroundImage:
-                        avatarUrl != null ? NetworkImage(avatarUrl!) : null,
-                        child: avatarUrl == null
-                            ? Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.blue.shade200,
-                                Colors.purple.shade200,
-                              ],
-                            ),
-                          ),
-                          child: Icon(
-                            Icons.person_rounded,
-                            color: Colors.white,
-                            size: 26,
-                          ),
-                        )
-                            : null,
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
           ],

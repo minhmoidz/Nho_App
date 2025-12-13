@@ -97,6 +97,14 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 20),
 
+              Text("Nhớ app",
+                style: TextStyle(
+                color: Color.fromARGB(255, 57, 123, 166),
+                fontSize: 21,
+                fontWeight: FontWeight.bold,
+                ),
+              ),
+
               // Ô nhập username
               TextField(
                 controller: _usernameController,

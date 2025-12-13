@@ -3,10 +3,11 @@ import 'dart:io';
 import 'package:flutter/material.dart'; // Để dùng debugPrint
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiService {
   // *** QUAN TRỌNG: Kiểm tra kỹ IP này. Nếu chạy máy thật cần chung WiFi ***
-  final String _baseUrl = "http://192.168.30.28:8000";
+  final String _baseUrl = dotenv.env['API_BASE_URL']!;
 
   final Map<String, String> _headers = {
     'Content-Type': 'application/json; charset=UTF-8',

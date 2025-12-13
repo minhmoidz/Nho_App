@@ -7,9 +7,12 @@ import 'home/reminder/notification_helper.dart';
 import 'login/auth_service.dart';
 import 'login/login_page.dart';
 import 'login/register_page.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await dotenv.load(fileName: ".env");
 
   // Khóa màn hình dọc (tùy chọn, thường app mobile hay dùng)
   await SystemChrome.setPreferredOrientations([
