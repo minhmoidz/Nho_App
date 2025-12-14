@@ -32,28 +32,78 @@ class ProfileApiService {
    }
   }
 
-  static Future<UserProfile> getProfile() async {
-   try{
-    final uri = Uri.parse('$_baseUrl/api/v1/profile');
-    final headers = await _getAuthenticatedHeaders(isJson: false);
+  static Future<UserProfile?> getProfile() async {
+   final uri = Uri.parse('$_baseUrl/api/v1/profile');
+   final headers = await _getAuthenticatedHeaders(isJson: false);
 
-    final response = await http.get(uri, headers: headers);
+   final response = await http.get(uri, headers: headers);
 
-    if (response.statusCode == 200) {
-     final body = json.decode(utf8.decode(response.bodyBytes));
-
-     if (body['success'] == true && body['data'] != null) {
-      return UserProfile.fromJson(body['data']);
-     } else {
-      throw Exception('API trả về không có data profile');
-     }
-    } else {
-     throw Exception(
-      'Lỗi tải hồ sơ: ${response.statusCode} - ${response.body}',
-     );
-    }
-   } catch (e) {
-    throw Exception('Không thể kết nối máy chủ. Lỗi: $e');
+   // 👉 CHƯA CÓ PROFILE → trả về null
+   if (response.statusCode == 404) {
+    return null;
    }
+
+   // 👉 CÁC LỖI THẬT
+   if (response.statusCode != 200) {
+    throw Exception(
+     'Lỗi tải hồ sơ: ${response.statusCode}',
+    );
+   }
+
+   final body = json.decode(utf8.decode(response.bodyBytes));
+
+   if (body['success'] != true) {
+    throw Exception(body['message'] ?? 'Không lấy được profile');
+   }
+
+   final data = body['data'];
+
+   if (data == null || data is! Map || data.isEmpty) {
+    return null;
+   }
+
+   return UserProfile.fromJson(
+    Map<String, dynamic>.from(data),
+   );
   }
+
+  static Future<UserProfile> updateProfile({
+   required String fullName,
+   required String birthDate,
+   required String phone,
+   String? address,
+  }) async {
+   final uri = Uri.parse('$_baseUrl/api/v1/profile');
+   final headers = await _getAuthenticatedHeaders(isJson: true);
+
+   final body = jsonEncode({
+    "full_name": fullName,
+    "birth_date": birthDate,
+    "phone": phone,
+    "address": address,
+   });
+
+   final response = await http.post(
+    uri,
+    headers: headers,
+    body: body,
+   );
+
+   if (response.statusCode != 200) {
+    throw Exception(
+     'Lỗi cập nhật hồ sơ: ${response.statusCode}',
+    );
+   }
+
+   final decoded = json.decode(utf8.decode(response.bodyBytes));
+
+   if (decoded['success'] != true) {
+    throw Exception(decoded['message'] ?? 'Cập nhật thất bại');
+   }
+
+   return UserProfile.fromJson(
+    Map<String, dynamic>.from(decoded['data']),
+   );
+  }
+
 }

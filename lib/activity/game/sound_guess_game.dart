@@ -1,82 +1,81 @@
-// lib/screens/proverb_quiz_game.dart
+// lib/screens/sound_guess_game.dart
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:gioapp/activity/trochoi/services/score_service.dart';
+import 'package:gioapp/activity/game/services/score_service.dart';
 
 import 'models/game_score.dart';
 
-
-class ProverbQuizGame extends StatefulWidget {
-  const ProverbQuizGame({Key? key}) : super(key: key);
+class SoundGuessGame extends StatefulWidget {
+  const SoundGuessGame({Key? key}) : super(key: key);
 
   @override
-  State<ProverbQuizGame> createState() => _ProverbQuizGameState();
+  State<SoundGuessGame> createState() => _SoundGuessGameState();
 }
 
-class _ProverbQuizGameState extends State<ProverbQuizGame> {
+class _SoundGuessGameState extends State<SoundGuessGame> {
   final ScoreService _scoreService = ScoreService();
 
-  final List<Proverb> _proverbs = [
-    Proverb(
-      question: 'Có công mài sắt...',
-      options: ['có ngày nên kim', 'có ngày nên vàng', 'có ngày thành công', 'có ngày giàu sang'],
+  final List<SoundItem> _sounds = [
+    SoundItem(
+      name: 'Gà',
+      soundDescription: 'Ò ó o... Ò ó o...',
+      options: ['Gà', 'Vịt', 'Ngỗng', 'Chim'],
       correctAnswer: 0,
-      explanation: 'Ý nghĩa: Kiên trì làm việc sẽ có kết quả tốt đẹp',
     ),
-    Proverb(
-      question: 'Ăn quả nhớ...',
-      options: ['kẻ trồng cây', 'người làm vườn', 'cây ăn quả', 'thời tiết tốt'],
-      correctAnswer: 0,
-      explanation: 'Ý nghĩa: Biết ơn người có công lao trước đây',
+    SoundItem(
+      name: 'Chó',
+      soundDescription: 'Gâu gâu... Gâu gâu...',
+      options: ['Mèo', 'Chó', 'Heo', 'Cừu'],
+      correctAnswer: 1,
     ),
-    Proverb(
-      question: 'Một giọt máu đào...',
-      options: ['hơn ao nước lã', 'quý hơn vàng', 'thắm đậm tình thân', 'chảy mãi trong tim'],
-      correctAnswer: 0,
-      explanation: 'Ý nghĩa: Tình ruột thịt quý giá hơn những mối quan hệ bên ngoài',
+    SoundItem(
+      name: 'Mèo',
+      soundDescription: 'Meo meo... Meo meo...',
+      options: ['Chó', 'Hổ', 'Mèo', 'Sư tử'],
+      correctAnswer: 2,
     ),
-    Proverb(
-      question: 'Học thầy không tày...',
-      options: ['học bạn', 'học trò', 'học sách', 'học đời'],
+    SoundItem(
+      name: 'Bò',
+      soundDescription: 'Ủm bò... Ủm bò...',
+      options: ['Bò', 'Trâu', 'Dê', 'Cừu'],
       correctAnswer: 0,
-      explanation: 'Ý nghĩa: Bạn bè cũng là nguồn học hỏi quý giá',
     ),
-    Proverb(
-      question: 'Không thầy đố mày...',
-      options: ['làm nên', 'thành công', 'học giỏi', 'biết chữ'],
-      correctAnswer: 0,
-      explanation: 'Ý nghĩa: Thầy giáo đóng vai trò quan trọng trong sự học',
+    SoundItem(
+      name: 'Vịt',
+      soundDescription: 'Cạp cạp... Cạp cạp...',
+      options: ['Gà', 'Vịt', 'Ngỗng', 'Thiên nga'],
+      correctAnswer: 1,
     ),
-    Proverb(
-      question: 'Lời nói chẳng mất...',
-      options: ['tiền mua', 'công sức', 'thời gian', 'sức lực'],
-      correctAnswer: 0,
-      explanation: 'Ý nghĩa: Nói lời hay, lời tốt không tốn kém gì',
+    SoundItem(
+      name: 'Lợn',
+      soundDescription: 'Éc éc... Éc éc...',
+      options: ['Trâu', 'Bò', 'Dê', 'Lợn'],
+      correctAnswer: 3,
     ),
-    Proverb(
-      question: 'Xa mặt...',
-      options: ['cách lòng', 'xa tim', 'quên ngay', 'mất tình'],
+    SoundItem(
+      name: 'Ngựa',
+      soundDescription: 'Hí... Hí...',
+      options: ['Ngựa', 'Lừa', 'Trâu', 'Bò'],
       correctAnswer: 0,
-      explanation: 'Ý nghĩa: Xa nhau lâu ngày dễ phai nhạt tình cảm',
     ),
-    Proverb(
-      question: 'Uống nước nhớ...',
-      options: ['nguồn', 'suối', 'giếng', 'sông'],
+    SoundItem(
+      name: 'Ếch',
+      soundDescription: 'Ộp ộp... Ộp ộp...',
+      options: ['Ếch', 'Cóc', 'Rắn', 'Thằn lằn'],
       correctAnswer: 0,
-      explanation: 'Ý nghĩa: Biết ơn cội nguồn, tổ tiên',
     ),
-    Proverb(
-      question: 'Chớ thấy sóng cả...',
-      options: ['mà ngã tay chèo', 'mà sợ hãi', 'mà bỏ thuyền', 'mà không chèo'],
-      correctAnswer: 0,
-      explanation: 'Ý nghĩa: Đừng vì khó khăn mà bỏ cuộc',
+    SoundItem(
+      name: 'Ong',
+      soundDescription: 'Vù vù... Vù vù...',
+      options: ['Muỗi', 'Ong', 'Ruồi', 'Bọ'],
+      correctAnswer: 1,
     ),
-    Proverb(
-      question: 'Ở hiền gặp...',
-      options: ['lành', 'tốt', 'may', 'phước'],
-      correctAnswer: 0,
-      explanation: 'Ý nghĩa: Làm người hiền lành sẽ gặp may mắn',
+    SoundItem(
+      name: 'Chim',
+      soundDescription: 'Chíp chíp... Chíp chíp...',
+      options: ['Dơi', 'Chim', 'Bướm', 'Cú'],
+      correctAnswer: 1,
     ),
   ];
 
@@ -84,12 +83,27 @@ class _ProverbQuizGameState extends State<ProverbQuizGame> {
   int _score = 0;
   int? _selectedAnswer;
   bool _showResult = false;
-  List<Proverb> _shuffledProverbs = [];
+  bool _soundPlaying = false;
+  List<SoundItem> _shuffledSounds = [];
 
   @override
   void initState() {
     super.initState();
-    _shuffledProverbs = List.from(_proverbs)..shuffle();
+    _shuffledSounds = List.from(_sounds)..shuffle();
+  }
+
+  void _playSound() {
+    setState(() {
+      _soundPlaying = true;
+    });
+
+    Timer(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _soundPlaying = false;
+        });
+      }
+    });
   }
 
   void _selectAnswer(int index) {
@@ -99,13 +113,13 @@ class _ProverbQuizGameState extends State<ProverbQuizGame> {
       _selectedAnswer = index;
       _showResult = true;
 
-      if (index == _shuffledProverbs[_currentIndex].correctAnswer) {
+      if (index == _shuffledSounds[_currentIndex].correctAnswer) {
         _score += 10;
       }
     });
 
     Timer(const Duration(seconds: 2), () {
-      if (_currentIndex < _shuffledProverbs.length - 1) {
+      if (_currentIndex < _shuffledSounds.length - 1) {
         setState(() {
           _currentIndex++;
           _selectedAnswer = null;
@@ -119,7 +133,7 @@ class _ProverbQuizGameState extends State<ProverbQuizGame> {
 
   void _showCompletionDialog() {
     _scoreService.saveScore(GameScore(
-      gameType: 'proverb_quiz',
+      gameType: 'sound_guess',
       score: _score,
       date: DateTime.now(),
     ));
@@ -130,15 +144,15 @@ class _ProverbQuizGameState extends State<ProverbQuizGame> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
-          '🎊 Hoàn Thành!',
-          style: TextStyle(color: Color(0xFF66BB6A), fontSize: 24),
+          '🎵 Tuyệt Vời!',
+          style: TextStyle(color: Color(0xFF81C784), fontSize: 24),
           textAlign: TextAlign.center,
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Bạn đã trả lời ${_score ~/ 10}/${_shuffledProverbs.length} câu đúng',
+              'Bạn đã đoán đúng ${_score ~/ 10}/${_shuffledSounds.length} âm thanh',
               style: TextStyle(fontSize: 18, color: Colors.grey[700]),
               textAlign: TextAlign.center,
             ),
@@ -146,7 +160,7 @@ class _ProverbQuizGameState extends State<ProverbQuizGame> {
             Container(
               padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
-                color: const Color(0xFF66BB6A).withOpacity(0.1),
+                color: const Color(0xFF81C784).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Text(
@@ -154,7 +168,7 @@ class _ProverbQuizGameState extends State<ProverbQuizGame> {
                 style: const TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF66BB6A),
+                  color: Color(0xFF81C784),
                 ),
               ),
             ),
@@ -176,11 +190,11 @@ class _ProverbQuizGameState extends State<ProverbQuizGame> {
                 _score = 0;
                 _selectedAnswer = null;
                 _showResult = false;
-                _shuffledProverbs.shuffle();
+                _shuffledSounds.shuffle();
               });
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF66BB6A),
+              backgroundColor: const Color(0xFF81C784),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -194,7 +208,7 @@ class _ProverbQuizGameState extends State<ProverbQuizGame> {
 
   @override
   Widget build(BuildContext context) {
-    final currentProverb = _shuffledProverbs[_currentIndex];
+    final currentSound = _shuffledSounds[_currentIndex];
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -206,7 +220,7 @@ class _ProverbQuizGameState extends State<ProverbQuizGame> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Đố Vui Ca Dao',
+          'Nghe Âm Đoán Vật',
           style: TextStyle(color: Color(0xFF2E7D32), fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -222,7 +236,7 @@ class _ProverbQuizGameState extends State<ProverbQuizGame> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Câu ${_currentIndex + 1}/${_shuffledProverbs.length}',
+                    'Câu ${_currentIndex + 1}/${_shuffledSounds.length}',
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey[600],
@@ -232,19 +246,19 @@ class _ProverbQuizGameState extends State<ProverbQuizGame> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF66BB6A).withOpacity(0.1),
+                      color: const Color(0xFF81C784).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.star, color: Color(0xFF66BB6A), size: 18),
+                        const Icon(Icons.star, color: Color(0xFF81C784), size: 18),
                         const SizedBox(width: 5),
                         Text(
                           '$_score điểm',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF66BB6A),
+                            color: Color(0xFF81C784),
                           ),
                         ),
                       ],
@@ -254,51 +268,107 @@ class _ProverbQuizGameState extends State<ProverbQuizGame> {
               ),
               const SizedBox(height: 10),
               LinearProgressIndicator(
-                value: (_currentIndex + 1) / _shuffledProverbs.length,
+                value: (_currentIndex + 1) / _shuffledSounds.length,
                 backgroundColor: Colors.grey[200],
-                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF66BB6A)),
+                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF81C784)),
                 minHeight: 8,
                 borderRadius: BorderRadius.circular(4),
               ),
               const SizedBox(height: 40),
 
-              // Question
+              // Sound Player
               Container(
-                padding: const EdgeInsets.all(25),
+                padding: const EdgeInsets.all(30),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF66BB6A), Color(0xFF81C784)],
+                    colors: [Color(0xFF81C784), Color(0xFFA5D6A7)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF66BB6A).withOpacity(0.3),
+                      color: const Color(0xFF81C784).withOpacity(0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-                child: Text(
-                  currentProverb.question,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    height: 1.4,
-                  ),
-                  textAlign: TextAlign.center,
+                child: Column(
+                  children: [
+                    const Icon(
+                      Icons.hearing,
+                      size: 60,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Hãy nghe âm thanh',
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    ElevatedButton.icon(
+                      onPressed: _soundPlaying ? null : _playSound,
+                      icon: Icon(
+                        _soundPlaying ? Icons.volume_up : Icons.play_arrow,
+                        size: 32,
+                      ),
+                      label: Text(
+                        _soundPlaying ? 'Đang phát...' : 'Nghe âm thanh',
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFF81C784),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 30,
+                          vertical: 15,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                    ),
+                    if (_soundPlaying) ...[
+                      const SizedBox(height: 20),
+                      Text(
+                        currentSound.soundDescription,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ],
                 ),
               ),
               const SizedBox(height: 30),
 
+              // Question
+              Text(
+                'Đây là tiếng con gì?',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+
               // Options
               Expanded(
                 child: ListView.builder(
-                  itemCount: currentProverb.options.length,
+                  itemCount: currentSound.options.length,
                   itemBuilder: (context, index) {
-                    final isCorrect = index == currentProverb.correctAnswer;
+                    final isCorrect = index == currentSound.correctAnswer;
                     final isSelected = _selectedAnswer == index;
 
                     Color getColor() {
@@ -310,7 +380,7 @@ class _ProverbQuizGameState extends State<ProverbQuizGame> {
                     }
 
                     Color getBorderColor() {
-                      if (!_showResult) return const Color(0xFF66BB6A);
+                      if (!_showResult) return const Color(0xFF81C784);
                       if (isSelected && isCorrect) return Colors.green;
                       if (isSelected && !isCorrect) return Colors.red;
                       if (isCorrect) return Colors.green;
@@ -338,9 +408,9 @@ class _ProverbQuizGameState extends State<ProverbQuizGame> {
                               children: [
                                 Expanded(
                                   child: Text(
-                                    currentProverb.options[index],
+                                    currentSound.options[index],
                                     style: TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 20,
                                       color: Colors.grey[800],
                                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                                     ),
@@ -359,32 +429,6 @@ class _ProverbQuizGameState extends State<ProverbQuizGame> {
                   },
                 ),
               ),
-
-              // Explanation
-              if (_showResult)
-                Container(
-                  padding: const EdgeInsets.all(15),
-                  decoration: BoxDecoration(
-                    color: Colors.blue[50],
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: Colors.blue[200]!),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.lightbulb, color: Colors.blue, size: 24),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          currentProverb.explanation,
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.grey[700],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
             ],
           ),
         ),

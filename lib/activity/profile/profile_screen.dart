@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:gioapp/constants/app_colors.dart';
 import '../login/auth_service.dart';
+import 'update_profile.dart';
 import 'profile_api_service.dart';
 import 'user_profile.dart';
+import 'package:intl/intl.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -12,7 +15,7 @@ class UserProfilePage extends StatefulWidget {
 
 class _UserProfilePageState extends State<UserProfilePage> {
   final AuthService _authService = AuthService();
-  late Future<UserProfile> _profileFuture;
+  late Future<UserProfile?> _profileFuture;
   bool _isLoggingOut = false;
 
   @override
@@ -21,16 +24,26 @@ class _UserProfilePageState extends State<UserProfilePage> {
     _profileFuture = ProfileApiService.getProfile();
   }
 
+  String _formatBirthDate(String birthDate) {
+    try {
+      final date = DateTime.parse(birthDate);
+      return DateFormat('dd/MM/yyyy').format(date);
+    } catch (e) {
+      return birthDate; // fallback nếu backend trả sai format
+    }
+  }
+
+
   void _handleLogout() async {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text("Đăng xuất"),
-        content: const Text("Bạn có chắc chắn muốn đăng xuất?"),
+        content: const Text("Bạn có chắc chắn muốn đăng xuất không?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text("Hủy"),
+            child: const Text("Hủy", style: TextStyle(color: Colors.black)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -44,7 +57,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               );
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text("Đăng xuất"),
+            child: const Text("Đăng xuất", style: TextStyle(color: Colors.white),),
           ),
         ],
       ),
@@ -54,10 +67,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4FFE9),
+      backgroundColor: AppColors.surface,
       body: _isLoggingOut
           ? const Center(child: CircularProgressIndicator())
-          : FutureBuilder<UserProfile>(
+          : FutureBuilder<UserProfile?>(
         future: _profileFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -73,14 +86,62 @@ class _UserProfilePageState extends State<UserProfilePage> {
             );
           }
 
-          final user = snapshot.data!;
-          return _buildProfileContent(user);
+          // 👉 CHƯA CÓ PROFILE
+          if (snapshot.data == null) {
+            return _buildEmptyProfile();
+          }
+
+          // 👉 CÓ PROFILE
+          return _buildProfileContent(snapshot.data!);
         },
       ),
     );
   }
 
   // ================= UI =================
+
+  Widget _buildEmptyProfile() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.person_off,
+              size: 80,
+              color: Colors.grey,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              "Chưa có thông tin tài khoản",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              "Vui lòng cập nhật thông tin cá nhân để sử dụng đầy đủ chức năng.",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white ,
+              ),
+              onPressed: () {
+                Navigator.pushNamed(context, '/update-profile');
+              },
+              child: const Text("Cập nhật tài khoản"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _buildProfileContent(UserProfile user) {
     return SingleChildScrollView(
@@ -106,11 +167,17 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 const SizedBox(height: 24),
                 _buildSectionHeader("Thông tin cá nhân"),
                 _buildCard([
-                  _buildItem(Icons.cake, "Ngày sinh", user.birthDate),
+                  _buildItem(
+                    Icons.cake,
+                    "Ngày sinh",
+                    _formatBirthDate(user.birthDate),
+                  ),
                   _buildDivider(),
                   _buildItem(Icons.person, "Tuổi", user.age.toString()),
                 ]),
                 const SizedBox(height: 40),
+                _buildEditButton(user),
+                const SizedBox(height: 24),
                 _buildLogoutButton(),
                 const SizedBox(height: 40),
               ],
@@ -261,6 +328,44 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
+  Widget _buildEditButton(UserProfile user) {
+    return SizedBox(
+      width: double.infinity,
+      height: 55,
+      child: ElevatedButton.icon(
+        onPressed: () async {
+          final result = await Navigator.push<UserProfile>(
+            context,
+            MaterialPageRoute(
+              builder: (_) => UpdateProfileScreen(user: user),
+            ),
+          );
+
+          if (result != null && mounted) {
+            setState(() {
+              _profileFuture = Future.value(result);
+            });
+          }
+        },
+        icon: const Icon(Icons.edit),
+        label: const Text(
+          "Chỉnh sửa",
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white,
+          foregroundColor: AppColors.primary,
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: AppColors.secondary),
+          ),
+        ),
+      ),
+    );
+  }
+
+
   Widget _buildLogoutButton() {
     return SizedBox(
       width: double.infinity,
@@ -284,4 +389,5 @@ class _UserProfilePageState extends State<UserProfilePage> {
       ),
     );
   }
+
 }

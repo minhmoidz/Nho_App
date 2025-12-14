@@ -9,7 +9,7 @@ import '../knowledge/knowledge_screen.dart';
 import '../login/auth_service.dart';
 import '../notification/notifications_page.dart'; // Đảm bảo đã import file này
 import '../profile/profile_screen.dart';
-import '../trochoi/brain_training_screen.dart';
+import '../game/brain_training_screen.dart';
 import '../wailet/bottom_nav_bar.dart';
 import '../wailet/custom_top_bar.dart';
 import 'health/health_diary_screen.dart';

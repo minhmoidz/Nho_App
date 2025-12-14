@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gioapp/constants/app_colors.dart';
 
 // --- 1. MODEL DỮ LIỆU (Mô phỏng cấu trúc bài viết) ---
 class KnowledgeItem {
@@ -29,7 +30,7 @@ class KnowledgeScreen extends StatefulWidget {
 
 class _KnowledgeScreenState extends State<KnowledgeScreen> {
   // Màu chủ đạo
-  final Color _primaryColor = const Color(0xFF1E88E5);
+  final Color _primaryColor = AppColors.primary;
   final Color _backgroundColor = const Color(0xFFF5F7FA);
 
   // Danh mục đang chọn (Mặc định là 'Tất cả')
@@ -84,7 +85,7 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> {
     return Scaffold(
       backgroundColor: _backgroundColor,
       appBar: AppBar(
-        title: const Text('Kiến Thức Sống Khỏe', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Kiến Thức Sống Khỏe', style: TextStyle(color: Colors.white)),
         centerTitle: true,
         backgroundColor: _primaryColor,
         foregroundColor: Colors.white,

@@ -1,11 +1,12 @@
 // lib/screens/brain_training_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gioapp/activity/trochoi/services/score_service.dart';
+import 'package:gioapp/activity/game/services/score_service.dart';
 import 'memory_match_game.dart';
 import 'proverb_quiz_game.dart';
 import 'sound_guess_game.dart';
 import 'leaderboard_screen.dart';
+import 'package:gioapp/constants/app_colors.dart';
 
 class BrainTrainingScreen extends StatefulWidget {
   const BrainTrainingScreen({Key? key}) : super(key: key);
@@ -38,7 +39,7 @@ class _BrainTrainingScreenState extends State<BrainTrainingScreen> {
         title: const Text(
           'Rèn Luyện Trí Não',
           style: TextStyle(
-            color: Color(0xFF2E7D32),
+            color: AppColors.secondary,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
@@ -46,7 +47,7 @@ class _BrainTrainingScreenState extends State<BrainTrainingScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.emoji_events, color: Color(0xFF2E7D32), size: 28),
+            icon: const Icon(Icons.emoji_events, color: AppColors.secondary, size: 28),
             onPressed: () {
               Navigator.push(
                 context,
@@ -67,7 +68,7 @@ class _BrainTrainingScreenState extends State<BrainTrainingScreen> {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF4CAF50), Color(0xFF81C784)],
+                    colors: [AppColors.primary, AppColors.primary],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -122,7 +123,7 @@ class _BrainTrainingScreenState extends State<BrainTrainingScreen> {
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF2E7D32),
+                  color: AppColors.secondary,
                 ),
               ),
               const SizedBox(height: 20),
@@ -133,7 +134,7 @@ class _BrainTrainingScreenState extends State<BrainTrainingScreen> {
                 title: 'Lật Hình Tìm Cặp',
                 description: 'Rèn luyện trí nhớ với trò chơi lật hình cổ điển',
                 icon: Icons.grid_on,
-                color: const Color(0xFF4CAF50),
+                color: AppColors.secondary,
                 bestScore: _scoreService.getBestScore('memory_match'),
                 onTap: () => _navigateToGame(context, const MemoryMatchGame()),
               ),
@@ -144,7 +145,7 @@ class _BrainTrainingScreenState extends State<BrainTrainingScreen> {
                 title: 'Đố Vui Ca Dao',
                 description: 'Nhớ lại những câu ca dao, tục ngữ quen thuộc',
                 icon: Icons.menu_book,
-                color: const Color(0xFF66BB6A),
+                color: AppColors.secondary,
                 bestScore: _scoreService.getBestScore('proverb_quiz'),
                 onTap: () => _navigateToGame(context, const ProverbQuizGame()),
               ),
@@ -155,7 +156,7 @@ class _BrainTrainingScreenState extends State<BrainTrainingScreen> {
                 title: 'Nghe Âm Đoán Vật',
                 description: 'Đoán đồ vật qua tiếng kêu đặc trưng',
                 icon: Icons.volume_up,
-                color: const Color(0xFF81C784),
+                color: AppColors.secondary,
                 bestScore: _scoreService.getBestScore('sound_guess'),
                 onTap: () => _navigateToGame(context, const SoundGuessGame()),
               ),

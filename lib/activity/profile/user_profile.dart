@@ -3,7 +3,7 @@ class UserProfile {
   final String phone;
   final String? address;
   final String birthDate;
-  final int age;
+  final int? age;
 
   UserProfile({
     required this.fullName,
