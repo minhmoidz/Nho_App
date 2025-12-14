@@ -57,7 +57,14 @@ dependencies:
   audioplayers: ^5.2.1
   url_launcher: ^6.3.2
   image_cropper: ^8.0.2
-
+  avatar_glow: ^3.0.1
+  fl_chart: ^0.66.0
+  geolocator: ^10.1.0   # Lấy vị trí GPS
+  share_plus: ^7.2.1
+  youtube_player_flutter: ^9.0.1
+  webview_flutter: ^4.4.2
+  flutter_timezone: ^3.0.1
+  convert: ^3.1.1
 
 dev_dependencies:
   flutter_test:

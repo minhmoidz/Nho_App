@@ -226,7 +226,7 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     _buildToolCard(
                       icon: Icons.camera_alt_rounded,
-                      label: 'Chụp ảnh, đọc chữ',
+                      label: 'Chụp ảnh\nđọc chữ',
                       color: AppColors.primary,
                       onTap: () {
                         Navigator.push(
@@ -253,7 +253,7 @@ class _HomePageState extends State<HomePage> {
                     _buildToolCard(
                       icon: Icons.sos_rounded, // Đổi icon thành SOS
                       label: 'SOS\nKhẩn cấp',  // Đổi tên hiển thị
-                      color: AppColors.primary,       // Đổi màu thành màu đỏ (màu cảnh báo)
+                      color: AppColors.primary,     // Đổi màu thành màu đỏ (màu cảnh báo)
                       onTap: () {
                         Navigator.push(
                           context,
