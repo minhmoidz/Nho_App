@@ -65,6 +65,7 @@ dependencies:
   webview_flutter: ^4.4.2
   flutter_timezone: ^3.0.1
   convert: ^3.1.1
+  google_mlkit_pose_detection: ^0.13.0
 
 dev_dependencies:
   flutter_test:
@@ -83,6 +84,10 @@ flutter:
     - images/robot.png
     - images/icon.png
     - .env
+    - assets/images/plank.gif
+    - assets/images/pushup.gif
+    - assets/images/squat.gif
+    - assets/images/jumping.gif
 
 flutter_icons:
   android: true

@@ -4,7 +4,7 @@ import '../../login/auth_service.dart'; // Đảm bảo đường dẫn đúng
 
 class ReminderApiService {
   // Cấu hình đúng đường dẫn API
-  static const String _baseUrl = 'https://be1-service-441093451544.asia-east1.run.app//api/v1';
+  static const String _baseUrl = 'http://192.168.30.28:8010/api/v1';
 
   // --- HELPER: LẤY HEADERS KÈM TOKEN ---
   static Future<Map<String, String>> _getHeaders() async {

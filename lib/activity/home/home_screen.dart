@@ -4,12 +4,13 @@ import 'package:gioapp/activity/home/reminders/create_diary_screen.dart';
 import 'package:gioapp/activity/home/sos/sos_screen.dart';
 import 'package:gioapp/constants/app_colors.dart';
 import '../chatbot/chat_page.dart';
-import '../chatbot/voice_page.dart';
+import '../chatbot/screens/voice_chat_screen.dart';
 import '../knowledge/knowledge_screen.dart';
 import '../login/auth_service.dart';
 import '../notification/notifications_page.dart'; // Đảm bảo đã import file này
 import '../profile/profile_screen.dart';
 import '../game/brain_training_screen.dart';
+import '../thunghiem/new.dart';
 import '../wailet/bottom_nav_bar.dart';
 import '../wailet/custom_top_bar.dart';
 import 'health/health_diary_screen.dart';
@@ -157,8 +158,8 @@ class _HomePageState extends State<HomePage> {
 
                 // Chat Card
                 _buildMainActionCard(
-                  title: 'Nhắn tin với trợ lý Nhớ',
-                  subtitle: 'Trò chuyện văn bản, hỏi đáp thông tin',
+                  title: 'Tâm sự cùng trợ lý Nhớ',
+                  subtitle: 'Tâm sự trò chuyện, hỏi đáp thông tin',
                   icon: Icons.chat_bubble_rounded,
                   gradientColors: [
                     AppColors.primary,
@@ -168,7 +169,7 @@ class _HomePageState extends State<HomePage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const VoiceChatPage1(),
+                        builder: (context) => const VoiceChatScreen(conversationId: '',),
                       ),
                     );
                   },
@@ -178,9 +179,9 @@ class _HomePageState extends State<HomePage> {
 
                 // Voice Card
                 _buildMainActionCard(
-                  title: 'Gọi điện với trợ lý Nhớ',
-                  subtitle: 'Trò chuyện bằng giọng nói tự nhiên',
-                  icon: Icons.phone_in_talk_rounded,
+                  title: 'Nâng cao sức khỏe trí não',
+                  subtitle: 'Bài tập rèn luyện trí nhớ với AI',
+                  icon: Icons.psychology_alt_rounded,
                   gradientColors: [
                     AppColors.secondary,
                     AppColors.secondary,
@@ -189,11 +190,12 @@ class _HomePageState extends State<HomePage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const VoiceOnlyPage(),
+                        builder: (context) => const EntryScreen11(),
                       ),
                     );
                   },
                 ),
+
               ],
             ),
           ),
