@@ -71,6 +71,7 @@ class ProfileApiService {
    required String fullName,
    required String birthDate,
    required String phone,
+   required int age,
    String? address,
   }) async {
    final uri = Uri.parse('$_baseUrl/api/v1/profile');
@@ -81,6 +82,7 @@ class ProfileApiService {
     "birth_date": birthDate,
     "phone": phone,
     "address": address,
+    "age": age,
    });
 
    final response = await http.post(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:gioapp/constants/app_colors.dart';
 // --- IMPORT CÁC FILE VỪA TẠO ---
 import 'tabs/articles_tab.dart';
 import 'tabs/videos_tab.dart';
@@ -13,7 +13,7 @@ class KnowledgeScreen extends StatelessWidget {
     return DefaultTabController(
       length: 3,
       child: Container(
-        color: const Color(0xFFF8FAFC),
+        color: AppColors.surface,
         child: Column(
           children: [
             // --- THANH TAB BAR ---
@@ -23,9 +23,9 @@ class KnowledgeScreen extends StatelessWidget {
                 border: Border(bottom: BorderSide(color: Colors.black12, width: 1)),
               ),
               child: const TabBar(
-                labelColor: Colors.teal,
+                labelColor: AppColors.secondary,
                 unselectedLabelColor: Colors.grey,
-                indicatorColor: Colors.teal,
+                indicatorColor: AppColors.secondary,
                 indicatorWeight: 3,
                 labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 tabs: [

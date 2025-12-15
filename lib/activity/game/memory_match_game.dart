@@ -156,7 +156,7 @@ class _MemoryMatchGameState extends State<MemoryMatchGame> {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: const Text('Chơi lại', style: TextStyle(fontSize: 16)),
+            child: const Text('Chơi lại', style: TextStyle(fontSize: 16, color: Colors.white)),
           ),
         ],
       ),

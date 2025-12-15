@@ -22,6 +22,7 @@ class _UpdateProfileScreen extends State<UpdateProfileScreen> {
   final _birthDateController = TextEditingController();
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
+  final _ageController = TextEditingController();
   DateTime? _selectedBirthDate;
 
   bool _isLoading = false;
@@ -38,8 +39,12 @@ class _UpdateProfileScreen extends State<UpdateProfileScreen> {
 
     if (user.birthDate.isNotEmpty) {
       _selectedBirthDate = DateTime.parse(user.birthDate);
+
       _birthDateController.text =
           DateFormat('dd/MM/yyyy').format(_selectedBirthDate!);
+
+      _ageController.text =
+          _calculateAge(_selectedBirthDate!).toString();
     }
   }
 
@@ -66,6 +71,20 @@ class _UpdateProfileScreen extends State<UpdateProfileScreen> {
     }
   }
 
+  int _calculateAge(DateTime birthDate) {
+    final today = DateTime.now();
+    int age = today.year - birthDate.year;
+
+    if (today.month < birthDate.month ||
+        (today.month == birthDate.month && today.day < birthDate.day)) {
+      age--;
+    }
+
+    return age;
+  }
+
+
+
   void _submitProfile() async {
     if (_isLoading) return;
 
@@ -84,6 +103,7 @@ class _UpdateProfileScreen extends State<UpdateProfileScreen> {
         birthDate: DateFormat('yyyy-MM-dd').format(_selectedBirthDate!),
         phone: _phoneController.text.trim(),
         address: _addressController.text.trim(),
+        age: _calculateAge(_selectedBirthDate!),
       );
 
       if (!mounted) return;
@@ -152,6 +172,17 @@ class _UpdateProfileScreen extends State<UpdateProfileScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Ngày sinh',
                   prefixIcon: Icon(Icons.calendar_month_outlined),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              TextField(
+                controller: _ageController,
+                readOnly: true,
+                decoration: const InputDecoration(
+                  labelText: 'Tuổi',
+                  prefixIcon: Icon(Icons.cake_outlined),
                 ),
               ),
 

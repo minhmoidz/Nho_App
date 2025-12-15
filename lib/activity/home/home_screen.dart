@@ -3,7 +3,6 @@ import 'package:gioapp/activity/home/reminder/manual_reminder_screen.dart';
 import 'package:gioapp/activity/home/reminders/create_diary_screen.dart';
 import 'package:gioapp/activity/home/sos/sos_screen.dart';
 import 'package:gioapp/constants/app_colors.dart';
-import '../chatbot/chat_page.dart';
 import '../chatbot/screens/voice_chat_screen.dart';
 import '../knowledge/knowledge_screen.dart';
 import '../login/auth_service.dart';
@@ -64,7 +63,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             CustomTopBar(
               appName: 'Nhớ App',
-              userName: 'Minh',
+              userName: 'Ông/bà',
               onAvatarTap: _goToProfileFromAvatar,
               // --- SỬA DÒNG NÀY ---
               // Thay vì gọi NotificationsPage(), ta truyền hàm _goToNotifications
@@ -116,6 +115,7 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SizedBox(height: 16),
                 Text(
                   'Hôm nay bạn muốn làm gì?',
                   style: TextStyle(

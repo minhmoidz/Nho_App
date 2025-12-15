@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:timezone/data/latest.dart' as tz; // Import timezone
-
 import 'activity/home/home_screen.dart';
 import 'activity/home/reminder/AlarmScreen.dart'; // Màn hình đọc báo thức
 import 'activity/home/reminder/notification_helper.dart';

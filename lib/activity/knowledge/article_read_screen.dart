@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:gioapp/constants/app_colors.dart';
 
 class ArticleReadScreen extends StatefulWidget {
   final String url;
@@ -43,7 +44,7 @@ class _ArticleReadScreenState extends State<ArticleReadScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Đọc báo", style: TextStyle(fontSize: 18)),
-        backgroundColor: Colors.teal,
+        backgroundColor: AppColors.secondary,
         actions: [
           // Nút tải lại trang nếu bị lỗi mạng
           IconButton(
@@ -60,7 +61,7 @@ class _ArticleReadScreenState extends State<ArticleReadScreen> {
           // 2. Vòng xoay Loading (Hiện ra khi chưa tải xong)
           if (_isLoading)
             const Center(
-              child: CircularProgressIndicator(color: Colors.teal),
+              child: CircularProgressIndicator(color: AppColors.secondary),
             ),
         ],
       ),

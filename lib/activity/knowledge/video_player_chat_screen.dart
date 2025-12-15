@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:gioapp/constants/app_colors.dart';
 import 'knowledge_data.dart'; // Đảm bảo class VideoItem có trường videoUrl
 
 // LƯU Ý: Tuyệt đối không để lộ API Key lên mạng xã hội hay Github
@@ -123,7 +124,7 @@ class _VideoPlayerChatScreenState extends State<VideoPlayerChatScreen> {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: Text(widget.video.title, style: const TextStyle(fontSize: 16)),
-        backgroundColor: Colors.teal,
+        backgroundColor: AppColors.secondary,
       ),
       body: Column(
         children: [
@@ -131,7 +132,7 @@ class _VideoPlayerChatScreenState extends State<VideoPlayerChatScreen> {
           YoutubePlayer(
             controller: _controller,
             showVideoProgressIndicator: true,
-            progressIndicatorColor: Colors.teal,
+            progressIndicatorColor: AppColors.secondary,
             onReady: () {
               // Code chạy khi video đã sẵn sàng (nếu cần)
               print('Player is ready.');
@@ -204,7 +205,7 @@ class _VideoPlayerChatScreenState extends State<VideoPlayerChatScreen> {
                           onPressed: _isSending ? null : _sendMessage,
                           icon: _isSending
                               ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
-                              : const Icon(Icons.send, color: Colors.teal),
+                              : const Icon(Icons.send, color: AppColors.secondary),
                         ),
                       ],
                     ),
