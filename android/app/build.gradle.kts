@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.gioapp"
+    namespace = "com.minh.nhoapp"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "28.2.13676358"
 
@@ -24,7 +24,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID
-        applicationId = "com.example.gioapp"
+        applicationId = "com.minh.nhoapp"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

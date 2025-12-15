@@ -77,18 +77,44 @@ class ApiService {
   }
 
   // 2. Tạo hội thoại mới
+  // Trong lib/services/api_service.dart
+
   Future<String?> createNewConversation() async {
     final uri = Uri.parse('$baseUrl/api/v1/chat/history/new');
+    print("CREATE NEW URL: $uri");
+
     try {
       final headers = await _getHeaders();
-      final response = await http.post(uri, headers: headers);
+      // SỬA 1: Gửi kèm body rỗng {} để tránh lỗi 422/400 ở một số server
+      final response = await http.post(uri, headers: headers, body: jsonEncode({}));
+
+      print("Create Status: ${response.statusCode}");
+      print("Create Body: ${utf8.decode(response.bodyBytes)}"); // Xem log để biết lỗi gì
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = jsonDecode(utf8.decode(response.bodyBytes));
-        return data['conversation_id'] ?? data['id'];
+        final dynamic decoded = jsonDecode(utf8.decode(response.bodyBytes));
+
+        // SỬA 2: Tìm ID trong mọi ngóc ngách của JSON trả về
+        if (decoded is Map<String, dynamic>) {
+          // Trường hợp 1: Trả về trực tiếp {"conversation_id": "123"}
+          if (decoded.containsKey('conversation_id')) return decoded['conversation_id'].toString();
+          if (decoded.containsKey('id')) return decoded['id'].toString();
+
+          // Trường hợp 2: Trả về lồng trong data {"data": {"id": "123"}}
+          if (decoded.containsKey('data')) {
+            final innerData = decoded['data'];
+
+            if (innerData is Map) {
+              if (innerData.containsKey('conversation_id')) return innerData['conversation_id'].toString();
+              if (innerData.containsKey('id')) return innerData['id'].toString();
+            }
+            // Trường hợp 3: data chính là ID {"data": "123"}
+            if (innerData is String || innerData is int) return innerData.toString();
+          }
+        }
       }
     } catch (e) {
-      print("Lỗi createNewConversation: $e");
+      print("❌ Lỗi createNewConversation: $e");
     }
     return null;
   }

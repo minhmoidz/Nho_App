@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:gioapp/constants/app_colors.dart';
-import 'knowledge_data.dart'; // Đảm bảo class VideoItem có trường videoUrl
-
-// LƯU Ý: Tuyệt đối không để lộ API Key lên mạng xã hội hay Github
-const String _googleApiKey = "YOUR_API_KEY_HERE";
+import '../chatbot/services/api_service.dart';
+import 'knowledge_data.dart';
 
 class VideoPlayerChatScreen extends StatefulWidget {
   final VideoItem video;
@@ -18,10 +14,15 @@ class VideoPlayerChatScreen extends StatefulWidget {
 }
 
 class _VideoPlayerChatScreenState extends State<VideoPlayerChatScreen> {
+  final ApiService _apiService = ApiService();
   late YoutubePlayerController _controller;
   final TextEditingController _chatController = TextEditingController();
 
-  // Danh sách tin nhắn
+  late String _currentSessionId;
+
+  // Biến kiểm tra xem đây có phải là tin nhắn đầu tiên không
+  bool _isFirstMessage = true;
+
   final List<Map<String, String>> _messages = [
     {
       "role": "ai",
@@ -35,17 +36,14 @@ class _VideoPlayerChatScreenState extends State<VideoPlayerChatScreen> {
   void initState() {
     super.initState();
 
-    // 1. Thay thế tên video vào câu chào
     _messages[0]["text"] = _messages[0]["text"]!.replaceAll("{{TITLE}}", widget.video.title);
 
-    // --- PHẦN SỬA LỖI QUAN TRỌNG ---
+    // Tạo Session ID
+    String cleanTitleId = widget.video.title.hashCode.toString();
+    _currentSessionId = "video_${cleanTitleId}_${DateTime.now().millisecondsSinceEpoch}";
 
-    // Lấy ID từ videoUrl chứ không phải thumbnailUrl
-    // Giả sử videoUrl là: "https://www.youtube.com/watch?v=abcdef123"
+    // Setup Video
     String? videoId = YoutubePlayer.convertUrlToId(widget.video.videoUrl);
-
-    // Nếu không lấy được ID (do link lỗi), dùng ID dự phòng để app không bị crash
-    // Bạn có thể thay bằng ID của một video hướng dẫn mặc định
     videoId ??= "lJdFK19yQa4";
 
     _controller = YoutubePlayerController(
@@ -65,11 +63,26 @@ class _VideoPlayerChatScreenState extends State<VideoPlayerChatScreen> {
     super.dispose();
   }
 
-  // --- HÀM GỬI TIN NHẮN (GIỮ NGUYÊN) ---
+  // --- HÀM TẠO NGỮ CẢNH ---
+  String _buildContextPrompt() {
+    // Bạn có thể thêm description nếu trong VideoItem có trường đó
+    // Ví dụ: ${widget.video.description}
+    return """
+    [HỆ THỐNG - THÔNG TIN NGỮ CẢNH]
+    Người dùng đang xem video Youtube này. Hãy đóng vai trợ lý sức khỏe trả lời dựa trên thông tin sau:
+    - Tiêu đề video: "${widget.video.title}"
+    - Link video: "${widget.video.videoUrl}"
+    
+    Lưu ý: Trả lời ngắn gọn, thân thiện, xưng hô là "Cháu" và gọi người dùng là "Bác".
+    ---------------------------------------------------
+    """;
+  }
+
   Future<void> _sendMessage() async {
     final text = _chatController.text.trim();
     if (text.isEmpty) return;
 
+    // 1. Chỉ hiện câu hỏi của người dùng lên UI (Không hiện ngữ cảnh loằng ngoằng)
     setState(() {
       _messages.add({"role": "user", "text": text});
       _isSending = true;
@@ -77,49 +90,48 @@ class _VideoPlayerChatScreenState extends State<VideoPlayerChatScreen> {
     _chatController.clear();
 
     try {
-      final url = Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$_googleApiKey');
+      String textToSend = text;
 
-      final prompt = """
-      Bạn là một trợ lý sức khỏe ân cần cho người già.
-      Người dùng đang xem video có tiêu đề: "${widget.video.title}".
-      Người dùng hỏi: "$text".
-      Hãy trả lời ngắn gọn, dễ hiểu, xưng hô là "Cháu" và gọi người dùng là "Bác".
-      Nếu câu hỏi liên quan đến nội dung video, hãy giải thích dựa trên tiêu đề video.
-      """;
+      // 2. KỸ THUẬT TIÊM NGỮ CẢNH (CONTEXT INJECTION)
+      // Nếu là tin nhắn đầu tiên, ta nối thêm thông tin video vào trước câu hỏi
+      if (_isFirstMessage) {
+        String contextPrompt = _buildContextPrompt();
+        textToSend = "$contextPrompt\n\nNgười dùng hỏi: $text";
 
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          "contents": [{"parts": [{"text": prompt}]}]
-        }),
-      );
+        // Đánh dấu là đã gửi ngữ cảnh rồi, lần sau không gửi nữa cho đỡ tốn token
+        _isFirstMessage = false;
+      }
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        // Kiểm tra xem có data trả về không để tránh lỗi null
-        if (data['candidates'] != null && data['candidates'].isNotEmpty) {
-          String aiReply = data['candidates'][0]['content']['parts'][0]['text'];
-          setState(() {
-            _messages.add({"role": "ai", "text": aiReply});
-          });
-        }
-      } else {
+      // 3. Gửi text đã kèm ngữ cảnh lên Server
+      final botReply = await _apiService.sendMessage(textToSend, _currentSessionId);
+
+      if (mounted) {
         setState(() {
-          _messages.add({"role": "ai", "text": "Cháu đang gặp chút sự cố kết nối, bác thử lại sau nhé!"});
+          if (botReply != null) {
+            String cleanText = botReply.replaceAll('*', '');
+            _messages.add({"role": "ai", "text": cleanText});
+          } else {
+            _messages.add({"role": "ai", "text": "Cháu đang gặp sự cố kết nối, bác thử lại sau nhé."});
+          }
         });
       }
     } catch (e) {
-      setState(() {
-        _messages.add({"role": "ai", "text": "Xin lỗi bác, mạng đang yếu nên cháu chưa trả lời được ạ."});
-      });
+      print("Lỗi chat: $e");
+      if (mounted) {
+        setState(() {
+          _messages.add({"role": "ai", "text": "Lỗi: $e"});
+        });
+      }
     } finally {
-      setState(() => _isSending = false);
+      if (mounted) {
+        setState(() => _isSending = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // ... (Phần giao diện Build giữ nguyên như cũ) ...
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
@@ -128,33 +140,17 @@ class _VideoPlayerChatScreenState extends State<VideoPlayerChatScreen> {
       ),
       body: Column(
         children: [
-          // --- 1. PHẦN VIDEO PLAYER ---
           YoutubePlayer(
             controller: _controller,
             showVideoProgressIndicator: true,
             progressIndicatorColor: AppColors.secondary,
-            onReady: () {
-              // Code chạy khi video đã sẵn sàng (nếu cần)
-              print('Player is ready.');
-            },
           ),
-
-          // --- 2. PHẦN CHAT ---
           Expanded(
             child: Container(
               color: Colors.grey[50],
               child: Column(
                 children: [
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(8),
-                    color: Colors.orange[100],
-                    child: const Text(
-                      "Hỏi đáp với Trợ lý ảo về video này",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.deepOrange, fontWeight: FontWeight.bold),
-                    ),
-                  ),
+                  // ... (Phần tiêu đề cam giữ nguyên)
                   Expanded(
                     child: ListView.builder(
                       padding: const EdgeInsets.all(16),
@@ -173,10 +169,7 @@ class _VideoPlayerChatScreenState extends State<VideoPlayerChatScreen> {
                               borderRadius: BorderRadius.circular(12),
                               border: isAi ? Border.all(color: Colors.grey.shade300) : null,
                             ),
-                            child: Text(
-                              msg['text']!,
-                              style: const TextStyle(fontSize: 16, height: 1.4),
-                            ),
+                            child: Text(msg['text']!, style: const TextStyle(fontSize: 16, height: 1.4, color: Colors.black87)),
                           ),
                         );
                       },
@@ -185,29 +178,34 @@ class _VideoPlayerChatScreenState extends State<VideoPlayerChatScreen> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     color: Colors.white,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _chatController,
-                            decoration: InputDecoration(
-                              hintText: 'Nhập câu hỏi...',
-                              filled: true,
-                              fillColor: Colors.grey[100],
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    child: SafeArea(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _chatController,
+                              decoration: InputDecoration(
+                                hintText: 'Nhập thắc mắc về video...',
+                                filled: true,
+                                fillColor: Colors.grey[100],
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              ),
+                              onSubmitted: (_) => _sendMessage(),
                             ),
-                            onSubmitted: (_) => _sendMessage(),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          onPressed: _isSending ? null : _sendMessage,
-                          icon: _isSending
-                              ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
-                              : const Icon(Icons.send, color: AppColors.secondary),
-                        ),
-                      ],
+                          const SizedBox(width: 8),
+                          CircleAvatar(
+                            backgroundColor: AppColors.secondary,
+                            child: IconButton(
+                              onPressed: _isSending ? null : _sendMessage,
+                              icon: _isSending
+                                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                  : const Icon(Icons.send, color: Colors.white, size: 20),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],

@@ -4,16 +4,12 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
+
 import '../../login/auth_service.dart';
-
-
-
 class DiaryApiService {
-  static const String _baseUrl = 'https://be1-service-441093451544.asia-east1.run.app/api/v1';
+  static const String _baseUrl = 'http://192.168.30.28:8010/api/v1';
 
-  // Hàm lấy Headers (Giữ nguyên)
-  static Future<Map<String, String>> _getAuthenticatedHeaders(
-      {bool isJson = true}) async {
+  static Future<Map<String, String>> _getAuthenticatedHeaders({bool isJson = true}) async {
     final authService = AuthService();
     final token = await authService.getToken();
     if (token == null) throw Exception('Chưa đăng nhập.');
@@ -23,82 +19,94 @@ class DiaryApiService {
         : {'Authorization': authHeader};
   }
 
-  /// Tạo nhật ký mới (Gửi Ảnh + Nội dung Text)
+  /// API POST: /api/v1/note
   static Future<Map<String, dynamic>> createDiaryEntry({
     required XFile image,
-    required String content, // <--- THAM SỐ MỚI: Nội dung chữ từ ảnh
+    required String content,
     required bool autoAnalyze,
   }) async {
     try {
-      debugPrint('--- Bắt đầu tạo nhật ký ---');
+      debugPrint('--- Bắt đầu tạo Note ---');
 
       final authService = AuthService();
       final token = await authService.getToken();
       if (token == null) throw Exception('Người dùng chưa đăng nhập.');
 
-      final uri = Uri.parse('$_baseUrl/diaries');
+      // CẬP NHẬT ENDPOINT: /note
+      final uri = Uri.parse('$_baseUrl/note');
       var request = http.MultipartRequest('POST', uri);
 
       request.headers['Authorization'] = 'Bearer $token';
 
-      // 1. Xử lý ảnh (Content-Type)
+      // 1. Xử lý file ảnh
       final mimeTypeData = lookupMimeType(image.path, headerBytes: [0xFF, 0xD8]);
       final String mimeType = mimeTypeData ?? 'image/jpeg';
       final List<String> mimeTypeSplit = mimeType.split('/');
 
       request.files.add(
         await http.MultipartFile.fromPath(
-          'file',
+          'file', // Tên trường file theo CURL
           image.path,
           contentType: MediaType(mimeTypeSplit[0], mimeTypeSplit[1]),
         ),
       );
 
-      // 2. Gửi kèm các trường dữ liệu khác
+      // 2. Các tham số khác
       request.fields['auto_analyze'] = autoAnalyze.toString();
 
-      // Gửi nội dung văn bản (trích xuất từ OCR hoặc người dùng nhập)
-      request.fields['content'] = content;
+      // Lưu ý: CURL bạn đưa không có trường content, nhưng UI lại có chỗ nhập text.
+      // Tôi vẫn gửi kèm 'content' để backend lưu ghi chú người dùng nhập.
+      // Nếu backend quy định tên khác (ví dụ: 'text', 'note'), hãy sửa key này.
+      if (content.isNotEmpty) {
+        request.fields['content'] = content;
+      }
 
       // Gửi request
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
 
       final responseBody = utf8.decode(response.bodyBytes);
-      debugPrint('Status: ${response.statusCode}');
+      debugPrint('Status Code: ${response.statusCode}');
+      debugPrint('Response: $responseBody');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = json.decode(responseBody);
         return data as Map<String, dynamic>;
       } else {
-        throw Exception(
-            'Lỗi từ máy chủ: ${response.statusCode}. Body: $responseBody');
+        throw Exception('Lỗi Server (${response.statusCode}): $responseBody');
       }
     } catch (e) {
-      debugPrint('Lỗi createDiaryEntry: $e');
+      debugPrint('Lỗi API createDiaryEntry: $e');
       throw Exception('Không thể tạo nhật ký: $e');
     }
   }
 
-  // Hàm lấy danh sách nhật ký (Giữ nguyên)
+  /// API GET: /api/v1/note
   static Future<List<dynamic>> getDiaryEntries({int limit = 10}) async {
     try {
-      final uri = Uri.parse('$_baseUrl/diaries').replace(
+      // CẬP NHẬT ENDPOINT: /note
+      final uri = Uri.parse('$_baseUrl/note').replace(
         queryParameters: {'limit': limit.toString()},
       );
+
       final headers = await _getAuthenticatedHeaders(isJson: false);
       final response = await http.get(uri, headers: headers);
 
       if (response.statusCode == 200) {
-        final data = json.decode(utf8.decode(response.bodyBytes));
+        final body = utf8.decode(response.bodyBytes);
+        final data = json.decode(body);
+
+        // Xử lý linh hoạt cấu trúc trả về
         if (data is List) return data;
-        if (data is Map && data['data'] is List) return data['data'];
+        if (data is Map && data.containsKey('data') && data['data'] is List) {
+          return data['data'];
+        }
         return [];
       } else {
-        throw Exception('Lỗi tải danh sách: ${response.statusCode}.');
+        throw Exception('Lỗi tải danh sách (${response.statusCode})');
       }
     } catch (e) {
-      throw Exception('Không thể tải danh sách nhật ký: $e');
+      throw Exception('Không thể tải danh sách note: $e');
     }
   }
 }

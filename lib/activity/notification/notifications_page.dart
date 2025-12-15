@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // Cần thêm package này để format ngày giờ (nếu chưa có)
+import 'package:intl/intl.dart';
+
+import '../home/reminder/local_storage.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -9,55 +11,69 @@ class NotificationsPage extends StatefulWidget {
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
-  // --- MOCK DATA (Dữ liệu giả) ---
-  // Sau này bạn có thể thay bằng API call
-  List<Map<String, dynamic>> _notifications = [
-    {
-      'id': 1,
-      'title': 'Đến giờ uống thuốc!',
-      'body': 'Đừng quên uống thuốc huyết áp sau bữa ăn trưa nhé.',
-      'time': DateTime.now().subtract(const Duration(minutes: 5)),
-      'isRead': false,
-      'type': 'reminder', // reminder, system, news
-    },
-    {
-      'id': 2,
-      'title': 'Chào mừng bạn mới',
-      'body': 'Cảm ơn bạn đã cài đặt ứng dụng Nhớ App. Hãy khám phá các tính năng ngay!',
-      'time': DateTime.now().subtract(const Duration(hours: 2)),
-      'isRead': false,
-      'type': 'system',
-    },
-    {
-      'id': 3,
-      'title': 'Cập nhật hệ thống',
-      'body': 'Bản cập nhật v1.0.2 đã sẵn sàng với nhiều tính năng mới.',
-      'time': DateTime.now().subtract(const Duration(days: 1)),
-      'isRead': true,
-      'type': 'update',
-    },
-    {
-      'id': 4,
-      'title': 'Kỷ niệm ngày này năm xưa',
-      'body': 'Xem lại bức ảnh bạn chụp vào ngày này năm ngoái.',
-      'time': DateTime.now().subtract(const Duration(days: 2)),
-      'isRead': true,
-      'type': 'memory',
-    },
-    {
-      'id': 5,
-      'title': 'Hoàn thành mục tiêu!',
-      'body': 'Chúc mừng! Bạn đã hoàn thành 5 bài tập trí não tuần này.',
-      'time': DateTime.now().subtract(const Duration(days: 3)),
-      'isRead': true,
-      'type': 'success',
-    },
-  ];
-
   // Màu chủ đạo
   final Color _primaryColor = const Color(0xFF1565C0);
+  bool _isLoading = true;
 
-  // Hàm xử lý: Đánh dấu tất cả là đã đọc
+  // List chứa thông báo hỗn hợp (Cả báo thức từ Local + Thông báo hệ thống)
+  List<Map<String, dynamic>> _notifications = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAllNotifications(); // Gọi hàm load dữ liệu
+  }
+
+  // --- HÀM 1: LOAD DỮ LIỆU TỪ NHIỀU NGUỒN ---
+  Future<void> _loadAllNotifications() async {
+    // 1. Lấy dữ liệu Báo thức/Việc làm từ Local Storage
+    List<dynamic> localReminders = await LocalStorage.getReminders();
+
+    // 2. Chuyển đổi dữ liệu Reminder -> Notification
+    List<Map<String, dynamic>> reminderNotifs = localReminders.map((item) {
+      DateTime time = DateTime.tryParse(item['remind_at'] ?? '') ?? DateTime.now();
+      bool isDone = item['is_completed'] ?? false;
+
+      return {
+        'id': item['id'], // Giữ ID để có thể xử lý sau này
+        'title': 'Nhắc nhở: ${item['title']}', // Thêm tiền tố để dễ nhận biết
+        'body': item['description'] != null && item['description'].isNotEmpty
+            ? item['description']
+            : 'Đến giờ thực hiện công việc này rồi!',
+        'time': time,
+        'isRead': isDone, // Nếu làm xong rồi thì coi như đã đọc
+        'type': 'reminder', // Đánh dấu là loại nhắc nhở
+      };
+    }).toList();
+
+    // 3. (Tùy chọn) Thêm thông báo giả lập từ hệ thống (như code cũ)
+    List<Map<String, dynamic>> systemNotifs = [
+      {
+        'id': 999,
+        'title': 'Chào mừng quay lại',
+        'body': 'Chúc bác một ngày vui vẻ và mạnh khỏe!',
+        'time': DateTime.now().subtract(const Duration(hours: 1)),
+        'isRead': false,
+        'type': 'system',
+      },
+    ];
+
+    // 4. Gộp 2 danh sách lại
+    List<Map<String, dynamic>> combinedList = [...reminderNotifs, ...systemNotifs];
+
+    // 5. Sắp xếp: Mới nhất lên đầu
+    combinedList.sort((a, b) => b['time'].compareTo(a['time']));
+
+    if (mounted) {
+      setState(() {
+        _notifications = combinedList;
+        _isLoading = false;
+      });
+    }
+  }
+
+  // --- CÁC HÀM XỬ LÝ GIAO DIỆN (GIỮ NGUYÊN HOẶC TÙY CHỈNH) ---
+
   void _markAllAsRead() {
     setState(() {
       for (var notif in _notifications) {
@@ -65,102 +81,76 @@ class _NotificationsPageState extends State<NotificationsPage> {
       }
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Đã đánh dấu tất cả là đã đọc")),
+      const SnackBar(content: Text("Đã xem tất cả")),
     );
   }
 
-  // Hàm xử lý: Xóa thông báo
   void _deleteNotification(int index) {
+    // Lưu ý: Ở đây chỉ xóa khỏi danh sách hiển thị tạm thời.
+    // Nếu muốn xóa thật trong LocalStorage thì cần gọi API LocalStorage.delete...
     final removedItem = _notifications[index];
     setState(() {
       _notifications.removeAt(index);
     });
-
-    // Cho phép hoàn tác (Undo)
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text("Đã xóa thông báo"),
-        action: SnackBarAction(
-          label: "Hoàn tác",
-          onPressed: () {
-            setState(() {
-              _notifications.insert(index, removedItem);
-            });
-          },
-        ),
-      ),
-    );
   }
 
-  // Helper: Lấy Icon theo loại thông báo
+  // Helper: Icon & Màu sắc (Giữ nguyên logic cũ)
   IconData _getIconByType(String type) {
-    switch (type) {
-      case 'reminder': return Icons.alarm;
-      case 'system': return Icons.info_outline;
-      case 'update': return Icons.system_update;
-      case 'memory': return Icons.photo_library;
-      case 'success': return Icons.emoji_events;
-      default: return Icons.notifications;
-    }
+    if (type == 'reminder') return Icons.alarm;
+    if (type == 'system') return Icons.info_outline;
+    return Icons.notifications;
   }
 
-  // Helper: Lấy Màu nền Icon theo loại
   Color _getColorByType(String type) {
-    switch (type) {
-      case 'reminder': return Colors.orange;
-      case 'system': return Colors.blue;
-      case 'update': return Colors.purple;
-      case 'memory': return Colors.pink;
-      case 'success': return Colors.green;
-      default: return Colors.grey;
-    }
+    if (type == 'reminder') return Colors.orange;
+    if (type == 'system') return Colors.blue;
+    return Colors.grey;
   }
 
-  // Helper: Format thời gian thông minh (Vừa xong, 2 giờ trước...)
   String _formatTime(DateTime time) {
     final now = DateTime.now();
     final diff = now.difference(time);
 
+    // Nếu là tương lai (Reminder chưa đến giờ)
+    if (diff.isNegative) {
+      return 'Sắp tới: ${DateFormat('HH:mm dd/MM').format(time)}';
+    }
+
     if (diff.inMinutes < 1) return 'Vừa xong';
     if (diff.inMinutes < 60) return '${diff.inMinutes} phút trước';
     if (diff.inHours < 24) return '${diff.inHours} giờ trước';
-    if (diff.inDays < 7) return '${diff.inDays} ngày trước';
-    return DateFormat('dd/MM/yyyy').format(time);
+    return DateFormat('dd/MM/yyyy HH:mm').format(time);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Tách list thành chưa đọc và đã đọc để hiển thị đẹp hơn (tùy chọn)
-    // Ở đây mình hiển thị chung 1 list sorted theo thời gian
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F6), // Màu nền xám nhạt
+      backgroundColor: const Color(0xFFF3F4F6),
       appBar: AppBar(
-        title: const Text(
-          'Thông Báo',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-        ),
+        title: const Text('Thông Báo & Nhắc Nhở', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black87, // Màu chữ đen
+        foregroundColor: Colors.black,
         elevation: 0,
         actions: [
           IconButton(
             icon: Icon(Icons.done_all, color: _primaryColor),
-            tooltip: 'Đánh dấu đã đọc tất cả',
             onPressed: _markAllAsRead,
           )
         ],
       ),
-      body: _notifications.isEmpty
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _notifications.isEmpty
           ? _buildEmptyState()
-          : ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _notifications.length,
-        itemBuilder: (context, index) {
-          final item = _notifications[index];
-          return _buildNotificationItem(item, index);
-        },
+          : RefreshIndicator(
+        // Kéo xuống để load lại dữ liệu mới nhất từ Local
+        onRefresh: _loadAllNotifications,
+        child: ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: _notifications.length,
+          itemBuilder: (context, index) => _buildNotificationItem(_notifications[index], index),
+        ),
       ),
     );
   }
@@ -170,19 +160,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(Icons.notifications_off_outlined, size: 64, color: _primaryColor),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Không có thông báo mới',
-            style: TextStyle(fontSize: 18, color: Colors.grey[600], fontWeight: FontWeight.w500),
-          ),
+          Icon(Icons.notifications_off_outlined, size: 80, color: Colors.grey[400]),
+          const SizedBox(height: 10),
+          Text('Chưa có thông báo nào', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
         ],
       ),
     );
@@ -190,116 +170,55 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   Widget _buildNotificationItem(Map<String, dynamic> item, int index) {
     final bool isRead = item['isRead'];
+    final bool isFuture = item['time'].isAfter(DateTime.now());
 
-    return Dismissible(
-      key: Key(item['id'].toString()),
-      direction: DismissDirection.endToStart, // Chỉ cho phép vuốt từ phải sang trái
-      background: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          color: Colors.redAccent,
-          borderRadius: BorderRadius.circular(12),
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: isRead ? 0 : 2,
+      color: isRead ? Colors.white : Colors.blue.shade50,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: CircleAvatar(
+          backgroundColor: _getColorByType(item['type']).withOpacity(0.1),
+          child: Icon(_getIconByType(item['type']), color: _getColorByType(item['type'])),
         ),
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: const Icon(Icons.delete_outline, color: Colors.white, size: 28),
-      ),
-      onDismissed: (direction) => _deleteNotification(index),
-      child: GestureDetector(
-        onTap: () {
-          // Bấm vào để xem chi tiết & đánh dấu đã đọc
-          setState(() {
-            item['isRead'] = true;
-          });
-          // Có thể navigate sang trang chi tiết ở đây
-        },
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: isRead ? Colors.white : Colors.blue.shade50, // Chưa đọc thì nền xanh nhạt
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-            border: isRead ? null : Border.all(color: Colors.blue.shade100),
+        title: Text(
+          item['title'],
+          style: TextStyle(
+            fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
+            color: Colors.black87,
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Icon Circle
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: _getColorByType(item['type']).withOpacity(0.1),
-                  shape: BoxShape.circle,
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 4),
+            Text(item['body'], maxLines: 2, overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                if (isFuture)
+                  const Icon(Icons.schedule, size: 14, color: Colors.green)
+                else
+                  const Icon(Icons.history, size: 14, color: Colors.grey),
+                const SizedBox(width: 4),
+                Text(
+                  _formatTime(item['time']),
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: isFuture ? Colors.green[700] : Colors.grey[500],
+                      fontWeight: isFuture ? FontWeight.bold : FontWeight.normal
+                  ),
                 ),
-                child: Icon(
-                  _getIconByType(item['type']),
-                  color: _getColorByType(item['type']),
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-
-              // Content
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            item['title'],
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: isRead ? FontWeight.w600 : FontWeight.bold,
-                              color: const Color(0xFF1E293B),
-                            ),
-                          ),
-                        ),
-                        if (!isRead)
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      item['body'],
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: isRead ? Colors.grey[600] : Colors.grey[800],
-                        height: 1.3,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _formatTime(item['time']),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[400],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
+        ),
+        // Nút xóa nhanh
+        trailing: IconButton(
+          icon: const Icon(Icons.close, size: 18, color: Colors.grey),
+          onPressed: () => _deleteNotification(index),
         ),
       ),
     );

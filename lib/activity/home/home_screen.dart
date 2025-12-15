@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:gioapp/activity/home/reminder/manual_reminder_screen.dart';
-import 'package:gioapp/activity/home/reminders/create_diary_screen.dart';
 import 'package:gioapp/activity/home/sos/sos_screen.dart';
 import 'package:gioapp/constants/app_colors.dart';
 import '../chatbot/screens/voice_chat_screen.dart';
@@ -179,8 +178,8 @@ class _HomePageState extends State<HomePage> {
 
                 // Voice Card
                 _buildMainActionCard(
-                  title: 'Nâng cao sức khỏe trí não',
-                  subtitle: 'Bài tập rèn luyện trí nhớ với AI',
+                  title: 'Nâng cao sức khỏe cùng Nhớ!',
+                  subtitle: 'Bài tập rèn luyện sức khỏe với AI',
                   icon: Icons.psychology_alt_rounded,
                   gradientColors: [
                     AppColors.secondary,
@@ -247,7 +246,7 @@ class _HomePageState extends State<HomePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const CreateDiaryScreen(),
+                            builder: (context) => const VoiceChatScreen(conversationId: '',),
                           ),
                         );
                       },

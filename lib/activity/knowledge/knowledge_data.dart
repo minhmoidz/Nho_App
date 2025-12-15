@@ -104,17 +104,9 @@ final List<Medicine> sampleMedicines = [
 
 // Dữ liệu video đã cập nhật thêm videoUrl
 final List<VideoItem> sampleVideos = [
+
   VideoItem(
     id: 'v1',
-    title: 'Bài tập Dưỡng sinh Kinh lạc - Giúp ngủ ngon',
-    duration: '15:30',
-    author: 'Sức Khỏe Người Cao Tuổi',
-    thumbnailUrl: 'https://img.youtube.com/vi/lJdFK19yQa4/hqdefault.jpg',
-    // Link chuẩn để plugin cắt lấy ID "lJdFK19yQa4"
-    videoUrl: 'https://www.youtube.com/watch?v=1ZYbU82GVz4',
-  ),
-  VideoItem(
-    id: 'v2',
     title: 'Xử lý nhanh khi bị tăng huyết áp đột ngột',
     duration: '08:45',
     author: 'Bác sĩ Gia Đình',
@@ -123,7 +115,7 @@ final List<VideoItem> sampleVideos = [
     videoUrl: 'https://www.youtube.com/watch?v=ScMzIvxBSi4',
   ),
   VideoItem(
-    id: 'v3',
+    id: 'v2',
     title: 'Nhạc thiền thư giãn dễ ngủ',
     duration: '60:00',
     author: 'Thiền Đạo',

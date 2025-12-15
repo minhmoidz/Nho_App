@@ -51,25 +51,37 @@ class NotificationHelper {
     }
   }
 
-  // --- 2. HẸN GIỜ (KHÔNG DÙNG MP3 RIÊNG) ---
+  // --- 2. HẸN GIỜ (ĐÃ NÂNG CẤP LẶP LẠI) ---
   static Future<void> scheduleNotification({
     required int id,
     required String title,
     required String body,
     required DateTime scheduledTime,
+    bool isDaily = false, // <--- THAM SỐ MỚI: Có lặp lại hàng ngày không?
   }) async {
     try {
       final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
       tz.TZDateTime tzScheduledTime = tz.TZDateTime.from(scheduledTime, tz.local);
 
-      // Xử lý logic thời gian: Nếu quá khứ < 1 phút thì vẫn báo (để tránh lag), nếu quá lâu thì bỏ
-      if (tzScheduledTime.isBefore(now)) {
-        if (now.difference(tzScheduledTime).inMinutes < 1) {
-          // Nếu vừa mới qua tức thì -> báo ngay sau 3 giây
-          tzScheduledTime = now.add(const Duration(seconds: 3));
-        } else {
-          debugPrint("⚠️ Bỏ qua ID $id vì là quá khứ.");
-          return;
+      // --- LOGIC XỬ LÝ THỜI GIAN ---
+
+      if (isDaily) {
+        // TRƯỜNG HỢP 1: LẶP HÀNG NGÀY
+        // Nếu giờ hẹn đã qua so với hiện tại (VD: Hẹn 8h sáng mà giờ là 9h sáng)
+        // -> Thì tự động cộng thêm 1 ngày để báo vào ngày mai
+        if (tzScheduledTime.isBefore(now)) {
+          tzScheduledTime = tzScheduledTime.add(const Duration(days: 1));
+        }
+      } else {
+        // TRƯỜNG HỢP 2: KHÔNG LẶP (BÁO 1 LẦN)
+        // Logic cũ: Nếu quá khứ < 1 phút thì vẫn báo (chống lag), lâu quá thì bỏ
+        if (tzScheduledTime.isBefore(now)) {
+          if (now.difference(tzScheduledTime).inMinutes < 1) {
+            tzScheduledTime = now.add(const Duration(seconds: 3));
+          } else {
+            debugPrint("⚠️ Bỏ qua ID $id vì là quá khứ.");
+            return;
+          }
         }
       }
 
@@ -78,24 +90,24 @@ class NotificationHelper {
 
       // Cấu hình thông báo Android
       final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-        'channel_nhac_viec_v1', // ID Kênh
-        'Nhắc nhở thuốc & việc', // Tên kênh
+        'channel_nhac_viec_v2', // Đổi ID kênh lên v2 để cập nhật cài đặt mới nếu cần
+        'Nhắc nhở thuốc & việc',
         channelDescription: 'Kênh báo thức quan trọng',
 
-        // --- CẤU HÌNH QUAN TRỌNG ĐỂ BUNG MÀN HÌNH ---
+        // --- CẤU HÌNH BUNG MÀN HÌNH ---
         importance: Importance.max,
         priority: Priority.max,
-        fullScreenIntent: true, // Yêu cầu bung màn hình (Cần quyền trong Manifest)
+        fullScreenIntent: true,
 
         // Âm thanh & Rung
-        playSound: true, // Dùng tiếng "Ting ting" mặc định của hệ thống
+        playSound: true,
         enableVibration: true,
-        vibrationPattern: Int64List.fromList([0, 1000, 1000, 1000, 1000]), // Rung mạnh: Nghỉ-Rung-Nghỉ-Rung
+        vibrationPattern: Int64List.fromList([0, 1000, 1000, 1000, 1000]),
 
         // Loại thông báo
         category: AndroidNotificationCategory.alarm,
         visibility: NotificationVisibility.public,
-        timeoutAfter: 60000, // Tự tắt thông báo sau 1 phút nếu không ai bấm
+        timeoutAfter: 60000, // Tự tắt sau 1 phút
       );
 
       await _notifications.zonedSchedule(
@@ -106,11 +118,15 @@ class NotificationHelper {
         NotificationDetails(android: androidDetails),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-        matchDateTimeComponents: DateTimeComponents.dateAndTime,
         payload: payloadData,
+
+        // --- QUAN TRỌNG: CẤU HÌNH LẶP LẠI ---
+        // Nếu isDaily = true -> DateTimeComponents.time (Chỉ so khớp giờ:phút -> Lặp mỗi ngày)
+        // Nếu isDaily = false -> DateTimeComponents.dateAndTime (So khớp cả ngày giờ -> Chỉ báo 1 lần)
+        matchDateTimeComponents: isDaily ? DateTimeComponents.time : DateTimeComponents.dateAndTime,
       );
 
-      debugPrint("✅ Đã hẹn giờ ID $id lúc $tzScheduledTime");
+      debugPrint("✅ Đã hẹn giờ ID $id lúc $tzScheduledTime (Lặp lại: $isDaily)");
 
     } catch (e) {
       debugPrint("❌ Lỗi hẹn giờ: $e");
