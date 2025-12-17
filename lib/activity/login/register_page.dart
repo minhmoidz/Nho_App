@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'api_service.dart';
-import 'package:gioapp/constants/app_colors.dart';
+import 'package:nhoapp/constants/app_colors.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});

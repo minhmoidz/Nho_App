@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:gioapp/constants/app_colors.dart';
+import 'package:nhoapp/constants/app_colors.dart';
 
 class ArticleReadScreen extends StatefulWidget {
   final String url;

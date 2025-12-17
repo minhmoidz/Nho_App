@@ -11,6 +11,8 @@ import 'activity/login/login_page.dart';
 import 'activity/login/register_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import 'activity/wailet/onboarding/onboarding_screen.dart';
+
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
@@ -115,7 +117,7 @@ class _MyAppState extends State<MyApp> {
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
         '/home': (context) => const HomePage(),
-        '/keycloak-login': (context) => const KeycloakLoginPlaceholder(),
+        '/onboarding': (context) => const OnboardingScreen(),
       },
     );
   }
@@ -165,34 +167,3 @@ class _AuthCheckState extends State<AuthCheck> {
   }
 }
 
-// Widget Placeholder cho Keycloak
-class KeycloakLoginPlaceholder extends StatelessWidget {
-  const KeycloakLoginPlaceholder({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Đăng nhập Keycloak')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.build_rounded, size: 60, color: Colors.orange),
-            const SizedBox(height: 16),
-            const Text(
-              'Chức năng đang phát triển',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text('Vui lòng quay lại sau.'),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Quay lại'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

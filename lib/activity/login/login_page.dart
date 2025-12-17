@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Thư viện lưu trạng thái
 import 'api_service.dart';
 import 'auth_service.dart';
-import 'package:gioapp/constants/app_colors.dart';
+import 'package:nhoapp/constants/app_colors.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -19,6 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
   bool _obscurePassword = true;
 
+  // Hàm xử lý đăng nhập
   void _login() async {
     if (_isLoading) return;
 
@@ -29,7 +31,7 @@ class _LoginPageState extends State<LoginPage> {
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
 
-    // Validation
+    // Validation cơ bản
     if (username.isEmpty || password.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -50,16 +52,34 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     try {
+      // 1. Gọi API đăng nhập
       final response = await _apiService.login(username, password);
       final String token = response['data']['access_token'];
+
+      // 2. Lưu token vào bộ nhớ máy
       await _authService.saveToken(token);
 
       debugPrint('Đăng nhập thành công! Token đã được lưu.');
 
       if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
+        // 3. LOGIC KIỂM TRA MÀN HÌNH CHÀO MỪNG (ONBOARDING)
+        final prefs = await SharedPreferences.getInstance();
+
+        // Lấy trạng thái đã xem intro hay chưa (mặc định là false)
+        bool hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+
+        if (!hasSeenOnboarding) {
+          // Nếu CHƯA xem -> Chuyển sang màn hình chào mừng
+          debugPrint('Người dùng mới/lần đầu: Chuyển sang Onboarding');
+          Navigator.pushReplacementNamed(context, '/onboarding');
+        } else {
+          // Nếu ĐÃ xem rồi -> Chuyển thẳng vào trang chủ
+          debugPrint('Người dùng cũ: Chuyển sang Home');
+          Navigator.pushReplacementNamed(context, '/home');
+        }
       }
     } catch (e) {
+      // Xử lý lỗi đăng nhập
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -101,7 +121,7 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 const SizedBox(height: 40),
 
-                // Logo với shadow và animation
+                // Logo với shadow và animation Hero
                 Hero(
                   tag: 'robot_logo',
                   child: Container(
@@ -127,16 +147,16 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 30),
 
-                // App name với gradient
+                // Tên ứng dụng
                 Text(
-                    "Nhớ app",
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
-                    ),
+                  "Nhớ app",
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
                   ),
+                ),
                 const SizedBox(height: 10),
 
                 Text(
@@ -148,7 +168,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 40),
 
-                // Card chứa form
+                // Card chứa form đăng nhập
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -164,7 +184,7 @@ class _LoginPageState extends State<LoginPage> {
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     children: [
-                      // Username field
+                      // Input Username
                       TextField(
                         controller: _usernameController,
                         style: const TextStyle(
@@ -206,7 +226,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Password field
+                      // Input Password
                       TextField(
                         controller: _passwordController,
                         style: const TextStyle(
@@ -262,7 +282,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 30),
 
-                      // Login button
+                      // Nút Đăng nhập
                       SizedBox(
                         width: double.infinity,
                         height: 56,
@@ -302,7 +322,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 24),
 
-                // Create account
+                // Link tạo tài khoản
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

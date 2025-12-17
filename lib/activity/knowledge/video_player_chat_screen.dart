@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import 'package:gioapp/constants/app_colors.dart';
+import 'package:nhoapp/constants/app_colors.dart';
 import '../chatbot/services/gemini_service.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'knowledge_data.dart';

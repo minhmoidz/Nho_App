@@ -1,12 +1,13 @@
 // lib/screens/brain_training_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gioapp/activity/game/services/score_service.dart';
+import 'package:nhoapp/activity/game/services/score_service.dart';
+
 import 'memory_match_game.dart';
 import 'proverb_quiz_game.dart';
 import 'sound_guess_game.dart';
 import 'leaderboard_screen.dart';
-import 'package:gioapp/constants/app_colors.dart';
+import 'package:nhoapp/constants/app_colors.dart';
 
 class BrainTrainingScreen extends StatefulWidget {
   const BrainTrainingScreen({Key? key}) : super(key: key);

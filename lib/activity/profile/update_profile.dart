@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gioapp/constants/app_colors.dart';
+import 'package:nhoapp/constants/app_colors.dart';
 import './profile_api_service.dart';
 import './user_profile.dart';
 import 'package:intl/intl.dart';

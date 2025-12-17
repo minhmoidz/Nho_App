@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
+// Đảm bảo bạn đã import các màn hình này
 import 'ExerciseListingScreen.dart';
 import 'ExercisePage.dart';
+import 'TrolyAI.dart';
+// import 'ChatScreen.dart'; // <--- Import màn hình chat của bạn tại đây
 
 class EntryScreen11 extends StatelessWidget {
   final dynamic section;
@@ -14,7 +17,7 @@ class EntryScreen11 extends StatelessWidget {
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text(
-          'Experience Features',
+          'Tính năng mở rộng',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
@@ -29,7 +32,7 @@ class EntryScreen11 extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Header with gradient and icon
+                // Header gradient
                 Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -56,7 +59,7 @@ class EntryScreen11 extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       const Text(
-                        'Explore new features',
+                        'Khám phá tính năng mới',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 24,
@@ -66,7 +69,7 @@ class EntryScreen11 extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Experience experimental features',
+                        'Trải nghiệm các công nghệ hỗ trợ sức khỏe hiện đại',
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.9),
                           fontSize: 16,
@@ -78,7 +81,7 @@ class EntryScreen11 extends StatelessWidget {
                 ),
                 const SizedBox(height: 32),
 
-                // Warning card with modern design
+                // Thẻ cảnh báo (Warning card)
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.amber[50],
@@ -106,7 +109,7 @@ class EntryScreen11 extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Experimental feature',
+                              'Tính năng thử nghiệm',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -115,7 +118,7 @@ class EntryScreen11 extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Being implemented in the near future',
+                              'Đang được phát triển và hoàn thiện trong tương lai gần',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey[700],
@@ -129,11 +132,13 @@ class EntryScreen11 extends StatelessWidget {
                 ),
                 const SizedBox(height: 32),
 
-                // Feature cards
+                // --- DANH SÁCH CÁC TÍNH NĂNG ---
+
+                // 1. Danh sách bài tập
                 _buildFeatureCard(
                   context,
-                  title: 'Exercise',
-                  description: 'Explore the complete list of exercises',
+                  title: 'Danh sách bài tập',
+                  description: 'Khám phá kho bài tập trị liệu',
                   icon: Icons.list_alt_rounded,
                   color: Colors.purple,
                   onTap: () {
@@ -146,10 +151,12 @@ class EntryScreen11 extends StatelessWidget {
                   },
                 ),
                 const SizedBox(height: 16),
+
+                // 2. Kiểm tra tư thế (AI Camera)
                 _buildFeatureCard(
                   context,
-                  title: 'Check your posture',
-                  description: 'Check interactive posture',
+                  title: 'Kiểm tra tư thế',
+                  description: 'Tương tác và chỉnh sửa tư thế tập',
                   icon: Icons.fitness_center_rounded,
                   color: Colors.orange,
                   onTap: () {
@@ -161,24 +168,27 @@ class EntryScreen11 extends StatelessWidget {
                     );
                   },
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 16),
 
-                // Main CTA button
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    gradient: LinearGradient(
-                      colors: [Colors.green[400]!, Colors.green[600]!],
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.green.withOpacity(0.3),
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
+                // 3. TÍNH NĂNG MỚI: CHAT AI
+                _buildFeatureCard(
+                  context,
+                  title: 'Trợ lý ảo AI',
+                  description: 'Trò chuyện và hỏi đáp sức khỏe',
+                  icon: Icons.smart_toy_rounded, // Hoặc Icons.chat_bubble_rounded
+                  color: Colors.teal, // Chọn màu xanh ngọc cho khác biệt
+                  onTap: () {
+                     Navigator.push(
+                       context,
+                       MaterialPageRoute(
+                         builder: (_) => VoiceChatPage1(),
+                       ),
+                     );
+
+                  },
                 ),
+
+                const SizedBox(height: 40),
               ],
             ),
           ),
@@ -187,6 +197,7 @@ class EntryScreen11 extends StatelessWidget {
     );
   }
 
+  // Widget xây dựng thẻ tính năng
   Widget _buildFeatureCard(
       BuildContext context, {
         required String title,
@@ -216,6 +227,7 @@ class EntryScreen11 extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
+                // Icon box
                 Container(
                   width: 60,
                   height: 60,
@@ -230,6 +242,8 @@ class EntryScreen11 extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
+
+                // Text info
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -253,6 +267,8 @@ class EntryScreen11 extends StatelessWidget {
                     ],
                   ),
                 ),
+
+                // Arrow icon
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 20,
@@ -260,169 +276,6 @@ class EntryScreen11 extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showExperienceDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Icon(
-                  Icons.explore_rounded,
-                  size: 48,
-                  color: Colors.blue[700],
-                ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Select a feature to experience',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'What feature would you like to explore?',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 32),
-              _buildDialogOption(
-                context,
-                title: 'Exercise Listing',
-                subtitle: 'List of exercises',
-                icon: Icons.list_alt_rounded,
-                color: Colors.purple,
-                onTap: () {
-                  Navigator.pop(ctx);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ExerciseListingScreen(),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
-              _buildDialogOption(
-                context,
-                title: 'Exercise Page',
-                subtitle: 'Exercises page',
-                icon: Icons.fitness_center_rounded,
-                color: Colors.orange,
-                onTap: () {
-                  Navigator.pop(ctx);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ExercisePage(),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 24),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text(
-                  'Close',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDialogOption(
-      BuildContext context, {
-        required String title,
-        required String subtitle,
-        required IconData icon,
-        required Color color,
-        required VoidCallback onTap,
-      }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[300]!),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  icon,
-                  size: 28,
-                  color: color,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 18,
-                color: Colors.grey[400],
-              ),
-            ],
           ),
         ),
       ),

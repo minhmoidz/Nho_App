@@ -120,7 +120,7 @@ class _ExercisePageState extends State<ExercisePage> {
             )
                 : SizedBox(
               height: MediaQuery.of(context).size.height - 300,
-              child: Image.asset('assets/images/cogen.jpg'),
+              child: Image.asset('images/nhoapp.png'),
             ),
           ),
           poseRes != ""
@@ -173,7 +173,7 @@ class _ExercisePageState extends State<ExercisePage> {
                     borderRadius: BorderRadius.circular(50),
                   ),
                   child: Image.asset(
-                    'assets/images/fissness.png',
+                    'images/nhoapp.png',
                     height: 50,
                     width: 50,
                   ),

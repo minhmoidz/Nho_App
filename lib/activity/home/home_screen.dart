@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:gioapp/activity/home/reminder/manual_reminder_screen.dart';
-import 'package:gioapp/activity/home/sos/sos_screen.dart';
-import 'package:gioapp/constants/app_colors.dart';
+import 'package:nhoapp/activity/home/reminder/manual_reminder_screen.dart';
+import 'package:nhoapp/activity/home/reminders/create_diary_screen.dart';
+import 'package:nhoapp/activity/home/sos/sos_screen.dart';
+import 'package:nhoapp/constants/app_colors.dart';
 import '../chatbot/screens/voice_chat_screen.dart';
 import '../knowledge/knowledge_screen.dart';
 import '../login/auth_service.dart';
@@ -246,7 +247,7 @@ class _HomePageState extends State<HomePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const VoiceChatScreen(conversationId: '',),
+                            builder: (context) => const CreateDiaryScreen(),
                           ),
                         );
                       },

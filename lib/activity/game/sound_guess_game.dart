@@ -1,9 +1,8 @@
 // lib/screens/sound_guess_game.dart
 import 'package:flutter/material.dart';
 import 'dart:async';
-
-import 'package:gioapp/activity/game/services/score_service.dart';
-
+import 'package:flutter_tts/flutter_tts.dart'; // 1. Import thư viện TTS
+import 'package:nhoapp/activity/game/services/score_service.dart';
 import 'models/game_score.dart';
 
 class SoundGuessGame extends StatefulWidget {
@@ -15,6 +14,7 @@ class SoundGuessGame extends StatefulWidget {
 
 class _SoundGuessGameState extends State<SoundGuessGame> {
   final ScoreService _scoreService = ScoreService();
+  final FlutterTts _flutterTts = FlutterTts(); // 2. Khai báo biến TTS
 
   final List<SoundItem> _sounds = [
     SoundItem(
@@ -90,14 +90,18 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
   void initState() {
     super.initState();
     _shuffledSounds = List.from(_sounds)..shuffle();
+    _initTts(); // 3. Khởi tạo cấu hình TTS
   }
 
-  void _playSound() {
-    setState(() {
-      _soundPlaying = true;
-    });
+  // 4. Cấu hình TTS
+  Future<void> _initTts() async {
+    await _flutterTts.setLanguage("vi-VN"); // Thiết lập tiếng Việt
+    await _flutterTts.setSpeechRate(0.4); // Tốc độ đọc chậm lại một chút để giống tiếng kêu
+    await _flutterTts.setVolume(1.0);
+    await _flutterTts.setPitch(1.0);
 
-    Timer(const Duration(seconds: 2), () {
+    // Lắng nghe khi đọc xong để tắt trạng thái loading
+    _flutterTts.setCompletionHandler(() {
       if (mounted) {
         setState(() {
           _soundPlaying = false;
@@ -106,8 +110,34 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
     });
   }
 
+  @override
+  void dispose() {
+    _flutterTts.stop(); // Dừng đọc khi thoát màn hình
+    super.dispose();
+  }
+
+  // 5. Hàm phát âm thanh mới
+  Future<void> _playSound() async {
+    setState(() {
+      _soundPlaying = true;
+    });
+
+    String textToSpeak = _shuffledSounds[_currentIndex].soundDescription;
+    await _flutterTts.speak(textToSpeak);
+
+    // Lưu ý: State _soundPlaying sẽ được set về false trong setCompletionHandler ở trên
+  }
+
   void _selectAnswer(int index) {
     if (_showResult) return;
+
+    // Dừng đọc nếu người dùng chọn đáp án
+    _flutterTts.stop();
+    if(mounted) {
+      setState(() {
+        _soundPlaying = false;
+      });
+    }
 
     setState(() {
       _selectedAnswer = index;
@@ -125,6 +155,8 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
           _selectedAnswer = null;
           _showResult = false;
         });
+        // Có thể tự động phát âm thanh câu tiếp theo nếu muốn:
+        // _playSound();
       } else {
         _showCompletionDialog();
       }
@@ -336,11 +368,10 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
                     if (_soundPlaying) ...[
                       const SizedBox(height: 20),
                       Text(
-                        currentSound.soundDescription,
+                        "Đang đọc: ${currentSound.soundDescription}", // Hiển thị text đang đọc để debug hoặc người dùng xem
                         style: const TextStyle(
-                          fontSize: 24,
+                          fontSize: 18,
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
                           fontStyle: FontStyle.italic,
                         ),
                         textAlign: TextAlign.center,

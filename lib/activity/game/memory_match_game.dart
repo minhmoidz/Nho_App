@@ -1,8 +1,8 @@
 // lib/screens/memory_match_game.dart
 import 'package:flutter/material.dart';
+import 'package:nhoapp/activity/game/services/score_service.dart';
 import 'dart:async';
 
-import 'package:gioapp/activity/game/services/score_service.dart';
 
 import 'models/game_score.dart';
 class MemoryMatchGame extends StatefulWidget {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gioapp/constants/app_colors.dart';
+import 'package:nhoapp/constants/app_colors.dart';
 // --- IMPORT CÁC FILE VỪA TẠO ---
 import 'tabs/articles_tab.dart';
 import 'tabs/videos_tab.dart';

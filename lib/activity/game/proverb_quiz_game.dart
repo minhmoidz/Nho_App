@@ -1,8 +1,7 @@
 // lib/screens/proverb_quiz_game.dart
 import 'package:flutter/material.dart';
 import 'dart:async';
-
-import 'package:gioapp/activity/game/services/score_service.dart';
+import 'package:nhoapp/activity/game/services/score_service.dart';
 
 import 'models/game_score.dart';
 

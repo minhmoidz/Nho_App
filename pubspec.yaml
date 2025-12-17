@@ -1,4 +1,4 @@
-name: gioapp
+name: nhoapp
 description: "A new Flutter project."
 publish_to: "none"
 
@@ -69,6 +69,7 @@ dependencies:
   flutter_timezone: ^3.0.1
   convert: ^3.1.1
   google_mlkit_pose_detection: ^0.13.0
+  introduction_screen: ^3.1.12
 
 
 dev_dependencies:
@@ -87,11 +88,8 @@ flutter:
   assets:
     - images/robot.png
     - images/nhoapp.png
-<<<<<<< HEAD
     - images/ava.png
-=======
     - images/logo-remove-bg.png
->>>>>>> b3c01e4df2f787a629cd72b4143ba811675db536
     - images/icon.png
     - .env
     - assets/images/plank.gif
