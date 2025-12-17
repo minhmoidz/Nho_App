@@ -180,7 +180,7 @@ class _HomePageState extends State<HomePage> {
                 _buildMainActionCard(
                   title: 'Nâng cao sức khỏe cùng Nhớ!',
                   subtitle: 'Bài tập rèn luyện sức khỏe với AI',
-                  icon: Icons.psychology_alt_rounded,
+                  icon: Icons.fitness_center,
                   gradientColors: [
                     AppColors.secondary,
                     AppColors.secondary,

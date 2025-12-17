@@ -154,17 +154,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSectionHeader("Thông tin liên hệ"),
-                _buildCard([
-                  _buildItem(Icons.phone, "Số điện thoại", user.phone),
-                  _buildDivider(),
-                  _buildItem(
-                    Icons.location_on,
-                    "Địa chỉ",
-                    user.address ?? "Chưa cập nhật",
-                  ),
-                ]),
-                const SizedBox(height: 24),
                 _buildSectionHeader("Thông tin cá nhân"),
                 _buildCard([
                   _buildItem(
@@ -174,6 +163,17 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   ),
                   _buildDivider(),
                   _buildItem(Icons.person, "Tuổi", user.age.toString()),
+                ]),
+                const SizedBox(height: 24),
+                _buildSectionHeader("Thông tin liên hệ"),
+                _buildCard([
+                  _buildItem(Icons.phone, "Số điện thoại", user.phone),
+                  _buildDivider(),
+                  _buildItem(
+                    Icons.location_on,
+                    "Địa chỉ",
+                    user.address ?? "Chưa cập nhật",
+                  ),
                 ]),
                 const SizedBox(height: 40),
                 _buildEditButton(user),
@@ -255,7 +255,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           fontSize: 13,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
-          color: Color(0xFF64748B),
+          color: Colors.black,
         ),
       ),
     );
