@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:gioapp/constants/app_colors.dart';
-import '../chatbot/services/api_service.dart';
+import '../chatbot/services/gemini_service.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 import 'knowledge_data.dart';
 
 class VideoPlayerChatScreen extends StatefulWidget {
@@ -14,11 +15,11 @@ class VideoPlayerChatScreen extends StatefulWidget {
 }
 
 class _VideoPlayerChatScreenState extends State<VideoPlayerChatScreen> {
-  final ApiService _apiService = ApiService();
+  final GeminiService _geminiService = GeminiService();
   late YoutubePlayerController _controller;
   final TextEditingController _chatController = TextEditingController();
 
-  late String _currentSessionId;
+  late ChatSession _chatSession;
 
   // Biến kiểm tra xem đây có phải là tin nhắn đầu tiên không
   bool _isFirstMessage = true;
@@ -38,9 +39,8 @@ class _VideoPlayerChatScreenState extends State<VideoPlayerChatScreen> {
 
     _messages[0]["text"] = _messages[0]["text"]!.replaceAll("{{TITLE}}", widget.video.title);
 
-    // Tạo Session ID
-    String cleanTitleId = widget.video.title.hashCode.toString();
-    _currentSessionId = "video_${cleanTitleId}_${DateTime.now().millisecondsSinceEpoch}";
+    // Tạo Chat Session với Gemini
+    _chatSession = _geminiService.createChatSession();
 
     // Setup Video
     String? videoId = YoutubePlayer.convertUrlToId(widget.video.videoUrl);
@@ -102,8 +102,8 @@ class _VideoPlayerChatScreenState extends State<VideoPlayerChatScreen> {
         _isFirstMessage = false;
       }
 
-      // 3. Gửi text đã kèm ngữ cảnh lên Server
-      final botReply = await _apiService.sendMessage(textToSend, _currentSessionId);
+      // 3. Gửi text đã kèm ngữ cảnh lên Gemini API qua chat session
+      final botReply = await _geminiService.sendMessageInSession(_chatSession, textToSend);
 
       if (mounted) {
         setState(() {

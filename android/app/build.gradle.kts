@@ -5,6 +5,15 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+import java.util.Properties
+import java.io.FileInputStream
+
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = "com.minh.nhoapp"
     compileSdk = flutter.compileSdkVersion
@@ -22,6 +31,17 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
+    signingConfigs {
+        create("release") {
+            if (keystorePropertiesFile.exists()) {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = rootProject.file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+            }
+        }
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID
         applicationId = "com.minh.nhoapp"
@@ -35,7 +55,7 @@ android {
         // Cấu hình cho bản Release (Chạy khi build APK/AAB hoặc run --release)
         getByName("release") {
             // Dùng tạm key debug để test release. Khi up store nhớ đổi lại config này.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
 
             // BẬT NÉN CODE & TỐI ƯU RESOURCES
             isMinifyEnabled = true

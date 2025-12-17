@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import '../../chatbot/services/api_service.dart';
+import '../../chatbot/services/gemini_service.dart';
 import '../knowledge_data.dart';
 class MedicineTab extends StatefulWidget {
   const MedicineTab({super.key});
@@ -10,8 +10,8 @@ class MedicineTab extends StatefulWidget {
 }
 
 class _MedicineTabState extends State<MedicineTab> {
-  // 2. SỬ DỤNG ChatApiService (Thay vì ApiService)
-  final ApiService _apiService = ApiService();
+  // Sử dụng GeminiService thay vì ApiService
+  final GeminiService _geminiService = GeminiService();
 
   final TextEditingController _searchController = TextEditingController();
   List<Medicine> _displayList = [];
@@ -57,18 +57,15 @@ class _MedicineTabState extends State<MedicineTab> {
   // --- HÀM TRA CỨU QUA API RIÊNG ---
   Future<void> _askAIForMedicine(String drugName) async {
     try {
-      // Tạo Session ID tạm để không bị lẫn context với các đoạn chat khác
-      final String tempSessionId = "medicine_search_${DateTime.now().millisecondsSinceEpoch}";
-
       // Prompt bắt buộc trả về JSON
       final String prompt =
           "Bạn là dược sĩ AI. Hãy cung cấp thông tin về thuốc: '$drugName'. "
           "Yêu cầu QUAN TRỌNG: Chỉ trả về 1 đoạn JSON duy nhất (không có văn bản dẫn dắt) theo định dạng sau: "
-          "{\"name\": \"Tên thuốc\", \"usage\": \"Công dụng chính\", \"dosage\": \"Liều dùng tham khảo\", \"warning\": \"Lưu ý quan trọng\"}. "
+          "{\\\"name\\\": \\\"Tên thuốc\\\", \\\"usage\\\": \\\"Công dụng chính\\\", \\\"dosage\\\": \\\"Liều dùng tham khảo\\\", \\\"warning\\\": \\\"Lưu ý quan trọng\\\"}. "
           "Nếu không tìm thấy thông tin, hãy trả về JSON với name='Không tìm thấy'. Trả lời bằng tiếng Việt.";
 
-      // Gọi API Service (Hàm sendMessage trả về String?)
-      final String? aiResponse = await _apiService.sendMessage(prompt, tempSessionId);
+      // Gọi Gemini API Service
+      final String? aiResponse = await _geminiService.sendMessage(prompt);
 
       if (aiResponse != null && aiResponse.isNotEmpty) {
         // --- XỬ LÝ CHUỖI JSON ---
@@ -99,7 +96,7 @@ class _MedicineTabState extends State<MedicineTab> {
           _handleFallbackText(aiResponse, drugName);
         }
       } else {
-        _showErrorSnackBar("Không nhận được phản hồi từ máy chủ.");
+        _showErrorSnackBar("Không nhận được phản hồi từ Gemini AI.");
       }
     } catch (e) {
       debugPrint("Lỗi phân tích thuốc: $e");
