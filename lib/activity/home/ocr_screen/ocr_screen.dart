@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_tts/flutter_tts.dart'; // Thư viện TTS
 import 'ocr_api_service.dart'; // Import file API cùng thư mục
+import 'package:nhoapp/constants/app_colors.dart';
+import 'package:nhoapp/widgets/app_bar.dart';
 
 class OcrScreen extends StatefulWidget {
   const OcrScreen({super.key});
@@ -149,18 +151,7 @@ class _OcrScreenState extends State<OcrScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.teal,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, size: 28, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Đọc chữ từ ảnh',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-      ),
+      appBar: NhoAppBar(title: "Chụp ảnh đọc chữ"),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -174,7 +165,7 @@ class _OcrScreenState extends State<OcrScreen> {
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.teal, width: 1),
+                  border: Border.all(color: AppColors.primary, width: 1),
                   image: DecorationImage(
                     image: FileImage(_selectedImage!),
                     fit: BoxFit.contain, // Hiển thị toàn bộ ảnh, không bị cắt
@@ -189,15 +180,15 @@ class _OcrScreenState extends State<OcrScreen> {
                 decoration: BoxDecoration(
                   color: Colors.teal[50],
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.teal[200]!),
+                  border: Border.all(color: AppColors.accent),
                 ),
                 child: Column(
                   children: [
-                    Icon(Icons.image_search, size: 48, color: Colors.teal[700]),
+                    Icon(Icons.image_search, size: 48, color: AppColors.primary),
                     const SizedBox(height: 10),
                     const Text(
                       'Chụp hoặc chọn ảnh để bắt đầu đọc',
-                      style: TextStyle(fontSize: 16, color: Colors.teal),
+                      style: TextStyle(fontSize: 16, color: AppColors.primary),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -211,7 +202,7 @@ class _OcrScreenState extends State<OcrScreen> {
                   child: ElevatedButton.icon(
                     onPressed: _isProcessing ? null : () => _pickImage(ImageSource.camera),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
+                      backgroundColor: AppColors.primary,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
@@ -225,11 +216,11 @@ class _OcrScreenState extends State<OcrScreen> {
                     onPressed: _isProcessing ? null : () => _pickImage(ImageSource.gallery),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      side: const BorderSide(color: Colors.teal),
+                      side: const BorderSide(color: AppColors.primary),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
-                    icon: const Icon(Icons.photo_library, color: Colors.teal),
-                    label: const Text('Thư viện', style: TextStyle(color: Colors.teal, fontSize: 16)),
+                    icon: const Icon(Icons.photo_library, color: AppColors.primary),
+                    label: const Text('Thư viện', style: TextStyle(color: AppColors.primary, fontSize: 16)),
                   ),
                 ),
               ],
@@ -244,7 +235,7 @@ class _OcrScreenState extends State<OcrScreen> {
                   padding: EdgeInsets.all(20.0),
                   child: Column(
                     children: [
-                      CircularProgressIndicator(color: Colors.teal),
+                      CircularProgressIndicator(color: AppColors.primary),
                       SizedBox(height: 10),
                       Text('Đang đọc ảnh...', style: TextStyle(color: Colors.grey)),
                     ],

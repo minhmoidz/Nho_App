@@ -24,15 +24,18 @@ class _UserProfilePageState extends State<UserProfilePage> {
     _profileFuture = ProfileApiService.getProfile();
   }
 
-  String _formatBirthDate(String birthDate) {
+  String _formatBirthDate(String? birthDate) {
+    if (birthDate == null || birthDate.isEmpty) {
+      return "Chưa cập nhật";
+    }
+
     try {
       final date = DateTime.parse(birthDate);
       return DateFormat('dd/MM/yyyy').format(date);
-    } catch (e) {
-      return birthDate; // fallback nếu backend trả sai format
+    } catch (_) {
+      return birthDate;
     }
   }
-
 
   void _handleLogout() async {
     showDialog(
@@ -67,7 +70,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: const Color(0xFFF8FAFC),
       body: _isLoggingOut
           ? const Center(child: CircularProgressIndicator())
           : FutureBuilder<UserProfile?>(
@@ -132,8 +135,19 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white ,
               ),
-              onPressed: () {
-                Navigator.pushNamed(context, '/update-profile');
+              onPressed: () async {
+                final result = await Navigator.push<UserProfile>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => UpdateProfileScreen(),
+                  ),
+                );
+
+                if (result != null && mounted) {
+                  setState(() {
+                    _profileFuture = Future.value(result);
+                  });
+                }
               },
               child: const Text("Cập nhật tài khoản"),
             ),
@@ -162,7 +176,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     _formatBirthDate(user.birthDate),
                   ),
                   _buildDivider(),
-                  _buildItem(Icons.person, "Tuổi", user.age.toString()),
+                  _buildItem(
+                    Icons.person,
+                    "Tuổi",
+                    user.age != null ? user.age.toString() : "Chưa cập nhật",
+                  ),
                 ]),
                 const SizedBox(height: 24),
                 _buildSectionHeader("Thông tin liên hệ"),

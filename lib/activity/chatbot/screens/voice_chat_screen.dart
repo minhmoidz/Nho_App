@@ -8,6 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:nhoapp/constants/app_colors.dart';
 
 // --- CÁC THƯ VIỆN ĐỂ UPLOAD ẢNH ---
 import 'package:http_parser/http_parser.dart';
@@ -28,7 +30,8 @@ class VoiceChatScreen extends StatefulWidget {
 
 class _VoiceChatScreenState extends State<VoiceChatScreen> with TickerProviderStateMixin {
   // CẤU HÌNH API
-  final String _baseUrl = 'http://192.168.30.28:8010/api/v1';
+  static String uri = dotenv.env['API_BASE_URL']!;
+  static String _baseUrl = uri + '/api/v1';
 
   final ApiService _apiService = ApiService();
   final AuthService _authService = AuthService();
@@ -484,7 +487,7 @@ Dựa vào hình ảnh và câu hỏi để tư vấn.
       leading: IconButton(icon: Icon(Icons.arrow_back_ios_new, color: _isCameraOn ? Colors.white : Colors.black87), onPressed: () => Navigator.pop(context)),
       title: Row(
         children: [
-          const CircleAvatar(backgroundColor: Colors.blueAccent, radius: 16, child: Icon(Icons.medical_services, size: 18, color: Colors.white)),
+          const CircleAvatar(backgroundColor: AppColors.primary, radius: 16, child: Icon(Icons.medical_services, size: 18, color: Colors.white)),
           const SizedBox(width: 10),
           Flexible(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text("Trợ lý AI", style: TextStyle(color: _isCameraOn ? Colors.white : Colors.black87, fontSize: 18, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
@@ -495,7 +498,7 @@ Dựa vào hình ảnh và câu hỏi để tư vấn.
       backgroundColor: _isCameraOn ? Colors.black.withOpacity(0.4) : Colors.white, elevation: _isCameraOn ? 0 : 1,
       actions: [
         IconButton(icon: Icon(_isCameraOn ? Icons.videocam_off : Icons.videocam, color: _isCameraOn ? Colors.redAccent : Colors.grey), onPressed: _toggleCameraState),
-        Builder(builder: (context) => IconButton(icon: Icon(Icons.history_rounded, color: _isCameraOn ? Colors.white : Colors.blueAccent, size: 28), onPressed: () => Scaffold.of(context).openEndDrawer())),
+        Builder(builder: (context) => IconButton(icon: Icon(Icons.history_rounded, color: _isCameraOn ? Colors.white : AppColors.primary, size: 28), onPressed: () => Scaffold.of(context).openEndDrawer())),
         const SizedBox(width: 8),
       ],
     );
@@ -503,8 +506,19 @@ Dựa vào hình ảnh và câu hỏi để tư vấn.
 
   Widget _buildDrawer() {
     return Drawer(child: Column(children: [
-      UserAccountsDrawerHeader(decoration: const BoxDecoration(color: Colors.blueAccent), accountName: const Text("Lịch sử", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)), accountEmail: Text("${_historyList.length} cuộc hội thoại"), currentAccountPicture: const CircleAvatar(backgroundColor: Colors.white, child: Icon(Icons.history, color: Colors.blueAccent))),
-      ListTile(leading: const Icon(Icons.add_circle, color: Colors.green), title: const Text("Cuộc hội thoại mới", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)), onTap: _createNewChat),
+      Container(width: double.infinity,
+        decoration: BoxDecoration(
+          color: AppColors.primary
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text("Lịch sử", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
+          Text("${_historyList.length} cuộc hội thoại", style: TextStyle(color: Colors.white)),
+          ],
+        ),
+      ),
+
+      ListTile(leading: const Icon(Icons.add_circle, color: AppColors.primary), title: const Text("Cuộc hội thoại mới", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)), onTap: _createNewChat),
       const Divider(),
       Expanded(child: ListView.separated(padding: EdgeInsets.zero, itemCount: _historyList.length, separatorBuilder: (ctx, i) => const Divider(height: 1), itemBuilder: (context, index) {
         final item = _historyList[index];
@@ -518,12 +532,12 @@ Dựa vào hình ảnh và câu hỏi để tư vấn.
     final bgColor = isUser ? null : (_isCameraOn ? Colors.white.withOpacity(0.9) : Colors.white);
     return Padding(padding: const EdgeInsets.only(bottom: 16), child: Row(mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start, children: [
       if (!isUser) const Padding(padding: EdgeInsets.only(right: 8), child: CircleAvatar(radius: 16, backgroundColor: Colors.white, child: Icon(Icons.smart_toy, size: 18, color: Colors.blueGrey))),
-      Flexible(child: Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), decoration: BoxDecoration(gradient: isUser ? const LinearGradient(colors: [Color(0xFF007AFF), Color(0xFF00C6FF)]) : null, color: bgColor, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))]), child: Text(message.content, style: TextStyle(fontSize: 16, height: 1.4, color: isUser ? Colors.white : Colors.black87)))),
+      Flexible(child: Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), decoration: BoxDecoration(gradient: isUser ? const LinearGradient(colors: [AppColors.primary, AppColors.secondary]) : null, color: bgColor, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))]), child: Text(message.content, style: TextStyle(fontSize: 16, height: 1.4, color: isUser ? Colors.white : Colors.black87, fontWeight: FontWeight.bold)))),
     ]));
   }
 
   Widget _buildLiveVoiceBubble() {
-    return Padding(padding: const EdgeInsets.only(bottom: 16), child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), decoration: BoxDecoration(color: _isCameraOn ? Colors.blue.withOpacity(0.4) : Colors.blue.withOpacity(0.1), borderRadius: BorderRadius.circular(20)), child: Row(children: [const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2)), const SizedBox(width: 10), Text(_liveVoiceText.isEmpty ? "..." : _liveVoiceText, style: TextStyle(color: _isCameraOn ? Colors.white : Colors.blue))]))]));
+    return Padding(padding: const EdgeInsets.only(bottom: 16), child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), decoration: BoxDecoration(color: _isCameraOn ? AppColors.primary : AppColors.secondary, borderRadius: BorderRadius.circular(20)), child: Row(children: [const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2)), const SizedBox(width: 10), Text(_liveVoiceText.isEmpty ? "..." : _liveVoiceText, style: TextStyle(color: _isCameraOn ? Colors.white : AppColors.primary))]))]));
   }
 
   Widget _buildThinkingBubble() {
@@ -536,7 +550,7 @@ Dựa vào hình ảnh và câu hỏi để tư vấn.
       const SizedBox(width: 10),
       Expanded(child: Container(decoration: BoxDecoration(color: _isCameraOn ? Colors.white.withOpacity(0.2) : const Color(0xFFF2F4F8), borderRadius: BorderRadius.circular(25)), child: TextField(controller: _textController, style: TextStyle(color: _isCameraOn ? Colors.white : Colors.black), decoration: InputDecoration(hintText: _isCameraOn ? "Nói để chụp & phân tích..." : "Nhập tin nhắn...", hintStyle: TextStyle(color: _isCameraOn ? Colors.white54 : Colors.grey), border: InputBorder.none, contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12)), onSubmitted: _handleSend))),
       const SizedBox(width: 8),
-      IconButton(onPressed: () => _handleSend(_textController.text), icon: const Icon(Icons.send_rounded, color: Colors.blueAccent)),
+      IconButton(onPressed: () => _handleSend(_textController.text), icon: const Icon(Icons.send_rounded, color: AppColors.primary)),
     ])));
   }
 }

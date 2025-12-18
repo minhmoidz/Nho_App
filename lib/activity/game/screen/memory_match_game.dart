@@ -4,7 +4,7 @@ import 'package:nhoapp/activity/game/services/score_service.dart';
 import 'dart:async';
 
 
-import 'models/game_score.dart';
+import '../models/game_score.dart';
 class MemoryMatchGame extends StatefulWidget {
   const MemoryMatchGame({Key? key}) : super(key: key);
 

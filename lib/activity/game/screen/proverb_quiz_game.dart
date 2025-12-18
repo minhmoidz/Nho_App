@@ -1,81 +1,81 @@
-// lib/screens/sound_guess_game.dart
+// lib/screens/proverb_quiz_game.dart
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:flutter_tts/flutter_tts.dart'; // 1. Import thư viện TTS
 import 'package:nhoapp/activity/game/services/score_service.dart';
-import 'models/game_score.dart';
 
-class SoundGuessGame extends StatefulWidget {
-  const SoundGuessGame({Key? key}) : super(key: key);
+import '../models/game_score.dart';
+
+
+class ProverbQuizGame extends StatefulWidget {
+  const ProverbQuizGame({Key? key}) : super(key: key);
 
   @override
-  State<SoundGuessGame> createState() => _SoundGuessGameState();
+  State<ProverbQuizGame> createState() => _ProverbQuizGameState();
 }
 
-class _SoundGuessGameState extends State<SoundGuessGame> {
+class _ProverbQuizGameState extends State<ProverbQuizGame> {
   final ScoreService _scoreService = ScoreService();
-  final FlutterTts _flutterTts = FlutterTts(); // 2. Khai báo biến TTS
 
-  final List<SoundItem> _sounds = [
-    SoundItem(
-      name: 'Gà',
-      soundDescription: 'Ò ó o... Ò ó o...',
-      options: ['Gà', 'Vịt', 'Ngỗng', 'Chim'],
+  final List<Proverb> _proverbs = [
+    Proverb(
+      question: 'Có công mài sắt...',
+      options: ['có ngày nên kim', 'có ngày nên vàng', 'có ngày thành công', 'có ngày giàu sang'],
       correctAnswer: 0,
+      explanation: 'Ý nghĩa: Kiên trì làm việc sẽ có kết quả tốt đẹp',
     ),
-    SoundItem(
-      name: 'Chó',
-      soundDescription: 'Gâu gâu... Gâu gâu...',
-      options: ['Mèo', 'Chó', 'Heo', 'Cừu'],
-      correctAnswer: 1,
-    ),
-    SoundItem(
-      name: 'Mèo',
-      soundDescription: 'Meo meo... Meo meo...',
-      options: ['Chó', 'Hổ', 'Mèo', 'Sư tử'],
-      correctAnswer: 2,
-    ),
-    SoundItem(
-      name: 'Bò',
-      soundDescription: 'Ủm bò... Ủm bò...',
-      options: ['Bò', 'Trâu', 'Dê', 'Cừu'],
+    Proverb(
+      question: 'Ăn quả nhớ...',
+      options: ['kẻ trồng cây', 'người làm vườn', 'cây ăn quả', 'thời tiết tốt'],
       correctAnswer: 0,
+      explanation: 'Ý nghĩa: Biết ơn người có công lao trước đây',
     ),
-    SoundItem(
-      name: 'Vịt',
-      soundDescription: 'Cạp cạp... Cạp cạp...',
-      options: ['Gà', 'Vịt', 'Ngỗng', 'Thiên nga'],
-      correctAnswer: 1,
-    ),
-    SoundItem(
-      name: 'Lợn',
-      soundDescription: 'Éc éc... Éc éc...',
-      options: ['Trâu', 'Bò', 'Dê', 'Lợn'],
-      correctAnswer: 3,
-    ),
-    SoundItem(
-      name: 'Ngựa',
-      soundDescription: 'Hí... Hí...',
-      options: ['Ngựa', 'Lừa', 'Trâu', 'Bò'],
+    Proverb(
+      question: 'Một giọt máu đào...',
+      options: ['hơn ao nước lã', 'quý hơn vàng', 'thắm đậm tình thân', 'chảy mãi trong tim'],
       correctAnswer: 0,
+      explanation: 'Ý nghĩa: Tình ruột thịt quý giá hơn những mối quan hệ bên ngoài',
     ),
-    SoundItem(
-      name: 'Ếch',
-      soundDescription: 'Ộp ộp... Ộp ộp...',
-      options: ['Ếch', 'Cóc', 'Rắn', 'Thằn lằn'],
+    Proverb(
+      question: 'Học thầy không tày...',
+      options: ['học bạn', 'học trò', 'học sách', 'học đời'],
       correctAnswer: 0,
+      explanation: 'Ý nghĩa: Bạn bè cũng là nguồn học hỏi quý giá',
     ),
-    SoundItem(
-      name: 'Ong',
-      soundDescription: 'Vù vù... Vù vù...',
-      options: ['Muỗi', 'Ong', 'Ruồi', 'Bọ'],
-      correctAnswer: 1,
+    Proverb(
+      question: 'Không thầy đố mày...',
+      options: ['làm nên', 'thành công', 'học giỏi', 'biết chữ'],
+      correctAnswer: 0,
+      explanation: 'Ý nghĩa: Thầy giáo đóng vai trò quan trọng trong sự học',
     ),
-    SoundItem(
-      name: 'Chim',
-      soundDescription: 'Chíp chíp... Chíp chíp...',
-      options: ['Dơi', 'Chim', 'Bướm', 'Cú'],
-      correctAnswer: 1,
+    Proverb(
+      question: 'Lời nói chẳng mất...',
+      options: ['tiền mua', 'công sức', 'thời gian', 'sức lực'],
+      correctAnswer: 0,
+      explanation: 'Ý nghĩa: Nói lời hay, lời tốt không tốn kém gì',
+    ),
+    Proverb(
+      question: 'Xa mặt...',
+      options: ['cách lòng', 'xa tim', 'quên ngay', 'mất tình'],
+      correctAnswer: 0,
+      explanation: 'Ý nghĩa: Xa nhau lâu ngày dễ phai nhạt tình cảm',
+    ),
+    Proverb(
+      question: 'Uống nước nhớ...',
+      options: ['nguồn', 'suối', 'giếng', 'sông'],
+      correctAnswer: 0,
+      explanation: 'Ý nghĩa: Biết ơn cội nguồn, tổ tiên',
+    ),
+    Proverb(
+      question: 'Chớ thấy sóng cả...',
+      options: ['mà ngã tay chèo', 'mà sợ hãi', 'mà bỏ thuyền', 'mà không chèo'],
+      correctAnswer: 0,
+      explanation: 'Ý nghĩa: Đừng vì khó khăn mà bỏ cuộc',
+    ),
+    Proverb(
+      question: 'Ở hiền gặp...',
+      options: ['lành', 'tốt', 'may', 'phước'],
+      correctAnswer: 0,
+      explanation: 'Ý nghĩa: Làm người hiền lành sẽ gặp may mắn',
     ),
   ];
 
@@ -83,80 +83,33 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
   int _score = 0;
   int? _selectedAnswer;
   bool _showResult = false;
-  bool _soundPlaying = false;
-  List<SoundItem> _shuffledSounds = [];
+  List<Proverb> _shuffledProverbs = [];
 
   @override
   void initState() {
     super.initState();
-    _shuffledSounds = List.from(_sounds)..shuffle();
-    _initTts(); // 3. Khởi tạo cấu hình TTS
-  }
-
-  // 4. Cấu hình TTS
-  Future<void> _initTts() async {
-    await _flutterTts.setLanguage("vi-VN"); // Thiết lập tiếng Việt
-    await _flutterTts.setSpeechRate(0.4); // Tốc độ đọc chậm lại một chút để giống tiếng kêu
-    await _flutterTts.setVolume(1.0);
-    await _flutterTts.setPitch(1.0);
-
-    // Lắng nghe khi đọc xong để tắt trạng thái loading
-    _flutterTts.setCompletionHandler(() {
-      if (mounted) {
-        setState(() {
-          _soundPlaying = false;
-        });
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _flutterTts.stop(); // Dừng đọc khi thoát màn hình
-    super.dispose();
-  }
-
-  // 5. Hàm phát âm thanh mới
-  Future<void> _playSound() async {
-    setState(() {
-      _soundPlaying = true;
-    });
-
-    String textToSpeak = _shuffledSounds[_currentIndex].soundDescription;
-    await _flutterTts.speak(textToSpeak);
-
-    // Lưu ý: State _soundPlaying sẽ được set về false trong setCompletionHandler ở trên
+    _shuffledProverbs = List.from(_proverbs)..shuffle();
   }
 
   void _selectAnswer(int index) {
     if (_showResult) return;
 
-    // Dừng đọc nếu người dùng chọn đáp án
-    _flutterTts.stop();
-    if(mounted) {
-      setState(() {
-        _soundPlaying = false;
-      });
-    }
-
     setState(() {
       _selectedAnswer = index;
       _showResult = true;
 
-      if (index == _shuffledSounds[_currentIndex].correctAnswer) {
+      if (index == _shuffledProverbs[_currentIndex].correctAnswer) {
         _score += 10;
       }
     });
 
     Timer(const Duration(seconds: 2), () {
-      if (_currentIndex < _shuffledSounds.length - 1) {
+      if (_currentIndex < _shuffledProverbs.length - 1) {
         setState(() {
           _currentIndex++;
           _selectedAnswer = null;
           _showResult = false;
         });
-        // Có thể tự động phát âm thanh câu tiếp theo nếu muốn:
-        // _playSound();
       } else {
         _showCompletionDialog();
       }
@@ -165,7 +118,7 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
 
   void _showCompletionDialog() {
     _scoreService.saveScore(GameScore(
-      gameType: 'sound_guess',
+      gameType: 'proverb_quiz',
       score: _score,
       date: DateTime.now(),
     ));
@@ -176,15 +129,15 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
-          '🎵 Tuyệt Vời!',
-          style: TextStyle(color: Color(0xFF81C784), fontSize: 24),
+          '🎊 Hoàn Thành!',
+          style: TextStyle(color: Color(0xFF66BB6A), fontSize: 24),
           textAlign: TextAlign.center,
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Bạn đã đoán đúng ${_score ~/ 10}/${_shuffledSounds.length} âm thanh',
+              'Bạn đã trả lời ${_score ~/ 10}/${_shuffledProverbs.length} câu đúng',
               style: TextStyle(fontSize: 18, color: Colors.grey[700]),
               textAlign: TextAlign.center,
             ),
@@ -192,7 +145,7 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
             Container(
               padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
-                color: const Color(0xFF81C784).withOpacity(0.1),
+                color: const Color(0xFF66BB6A).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Text(
@@ -200,7 +153,7 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
                 style: const TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF81C784),
+                  color: Color(0xFF66BB6A),
                 ),
               ),
             ),
@@ -222,11 +175,11 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
                 _score = 0;
                 _selectedAnswer = null;
                 _showResult = false;
-                _shuffledSounds.shuffle();
+                _shuffledProverbs.shuffle();
               });
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF81C784),
+              backgroundColor: const Color(0xFF66BB6A),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -240,7 +193,7 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
 
   @override
   Widget build(BuildContext context) {
-    final currentSound = _shuffledSounds[_currentIndex];
+    final currentProverb = _shuffledProverbs[_currentIndex];
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -252,7 +205,7 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Nghe Âm Đoán Vật',
+          'Đố Vui Ca Dao',
           style: TextStyle(color: Color(0xFF2E7D32), fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -268,7 +221,7 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Câu ${_currentIndex + 1}/${_shuffledSounds.length}',
+                    'Câu ${_currentIndex + 1}/${_shuffledProverbs.length}',
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey[600],
@@ -278,19 +231,19 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF81C784).withOpacity(0.1),
+                      color: const Color(0xFF66BB6A).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.star, color: Color(0xFF81C784), size: 18),
+                        const Icon(Icons.star, color: Color(0xFF66BB6A), size: 18),
                         const SizedBox(width: 5),
                         Text(
                           '$_score điểm',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF81C784),
+                            color: Color(0xFF66BB6A),
                           ),
                         ),
                       ],
@@ -300,106 +253,51 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
               ),
               const SizedBox(height: 10),
               LinearProgressIndicator(
-                value: (_currentIndex + 1) / _shuffledSounds.length,
+                value: (_currentIndex + 1) / _shuffledProverbs.length,
                 backgroundColor: Colors.grey[200],
-                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF81C784)),
+                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF66BB6A)),
                 minHeight: 8,
                 borderRadius: BorderRadius.circular(4),
               ),
               const SizedBox(height: 40),
 
-              // Sound Player
+              // Question
               Container(
-                padding: const EdgeInsets.all(30),
+                padding: const EdgeInsets.all(25),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF81C784), Color(0xFFA5D6A7)],
+                    colors: [Color(0xFF66BB6A), Color(0xFF81C784)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF81C784).withOpacity(0.3),
+                      color: const Color(0xFF66BB6A).withOpacity(0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-                child: Column(
-                  children: [
-                    const Icon(
-                      Icons.hearing,
-                      size: 60,
-                      color: Colors.white,
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Hãy nghe âm thanh',
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    ElevatedButton.icon(
-                      onPressed: _soundPlaying ? null : _playSound,
-                      icon: Icon(
-                        _soundPlaying ? Icons.volume_up : Icons.play_arrow,
-                        size: 32,
-                      ),
-                      label: Text(
-                        _soundPlaying ? 'Đang phát...' : 'Nghe âm thanh',
-                        style: const TextStyle(fontSize: 18),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFF81C784),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 30,
-                          vertical: 15,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
-                    ),
-                    if (_soundPlaying) ...[
-                      const SizedBox(height: 20),
-                      Text(
-                        "Đang đọc: ${currentSound.soundDescription}", // Hiển thị text đang đọc để debug hoặc người dùng xem
-                        style: const TextStyle(
-                          fontSize: 18,
-                          color: Colors.white,
-                          fontStyle: FontStyle.italic,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ],
+                child: Text(
+                  currentProverb.question,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    height: 1.4,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
               const SizedBox(height: 30),
 
-              // Question
-              Text(
-                'Đây là tiếng con gì?',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-
               // Options
               Expanded(
                 child: ListView.builder(
-                  itemCount: currentSound.options.length,
+                  itemCount: currentProverb.options.length,
                   itemBuilder: (context, index) {
-                    final isCorrect = index == currentSound.correctAnswer;
+                    final isCorrect = index == currentProverb.correctAnswer;
                     final isSelected = _selectedAnswer == index;
 
                     Color getColor() {
@@ -411,7 +309,7 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
                     }
 
                     Color getBorderColor() {
-                      if (!_showResult) return const Color(0xFF81C784);
+                      if (!_showResult) return const Color(0xFF66BB6A);
                       if (isSelected && isCorrect) return Colors.green;
                       if (isSelected && !isCorrect) return Colors.red;
                       if (isCorrect) return Colors.green;
@@ -439,9 +337,9 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
                               children: [
                                 Expanded(
                                   child: Text(
-                                    currentSound.options[index],
+                                    currentProverb.options[index],
                                     style: TextStyle(
-                                      fontSize: 20,
+                                      fontSize: 18,
                                       color: Colors.grey[800],
                                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                                     ),
@@ -460,6 +358,32 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
                   },
                 ),
               ),
+
+              // Explanation
+              if (_showResult)
+                Container(
+                  padding: const EdgeInsets.all(15),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(color: Colors.blue[200]!),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.lightbulb, color: Colors.blue, size: 24),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          currentProverb.explanation,
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
             ],
           ),
         ),

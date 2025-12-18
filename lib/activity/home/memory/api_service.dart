@@ -19,7 +19,7 @@ class MemoryService {
   dynamic _handleResponse(http.Response response) {
     if (response.statusCode == 204) return null; // No Content
 
-    // Decode UTF-8 để không bị lỗi font tiếng Việt
+    // Decode UTF-8 để không bị lỗi fonts tiếng Việt
     final dynamic body = json.decode(utf8.decode(response.bodyBytes));
 
     if (response.statusCode >= 200 && response.statusCode < 300) {

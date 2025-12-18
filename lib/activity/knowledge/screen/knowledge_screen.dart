@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:nhoapp/constants/app_colors.dart';
 // --- IMPORT CÁC FILE VỪA TẠO ---
-import 'tabs/articles_tab.dart';
-import 'tabs/videos_tab.dart';
-import 'tabs/medicine_tab.dart';
+import '../tabs/articles_tab.dart';
+import '../tabs/videos_tab.dart';
+import '../tabs/medicine_tab.dart';
 
 class KnowledgeScreen extends StatelessWidget {
   const KnowledgeScreen({super.key});
@@ -23,11 +23,11 @@ class KnowledgeScreen extends StatelessWidget {
                 border: Border(bottom: BorderSide(color: Colors.black12, width: 1)),
               ),
               child: const TabBar(
-                labelColor: AppColors.secondary,
+                labelColor: AppColors.primary,
                 unselectedLabelColor: Colors.grey,
-                indicatorColor: AppColors.secondary,
+                indicatorColor: AppColors.primary,
                 indicatorWeight: 3,
-                labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: "Montserrat"),
                 tabs: [
                   Tab(text: 'Đọc báo', icon: Icon(Icons.article_outlined)),
                   Tab(text: 'Bài giảng', icon: Icon(Icons.video_library_outlined)),

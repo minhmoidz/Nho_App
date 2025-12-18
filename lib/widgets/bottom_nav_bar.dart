@@ -119,7 +119,7 @@ class _NavItem extends StatelessWidget {
                 // Khi chọn thì chữ đậm và có màu, không chọn thì màu xám
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 color: isSelected ? activeColor : Colors.grey.shade600,
-                fontFamily: 'Roboto', // Hoặc font mặc định của app bạn
+                fontFamily: 'Montserrat',
               ),
               child: Text(label),
             ),

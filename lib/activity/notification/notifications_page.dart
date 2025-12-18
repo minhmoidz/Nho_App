@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:nhoapp/widgets/app_bar.dart';
 
 import '../home/reminder/local_storage.dart';
 
@@ -11,8 +12,6 @@ class NotificationsPage extends StatefulWidget {
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
-  // Màu chủ đạo
-  final Color _primaryColor = const Color(0xFF1565C0);
   bool _isLoading = true;
 
   // List chứa thông báo hỗn hợp (Cả báo thức từ Local + Thông báo hệ thống)
@@ -126,15 +125,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF3F4F6),
-      appBar: AppBar(
-        title: const Text('Thông Báo & Nhắc Nhở', style: TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
+      appBar: NhoAppBar(
+        title: 'Thông Báo & Nhắc Nhở',
         actions: [
           IconButton(
-            icon: Icon(Icons.done_all, color: _primaryColor),
+            icon: Icon(Icons.done_all, color: Colors.white),
             onPressed: _markAllAsRead,
           )
         ],

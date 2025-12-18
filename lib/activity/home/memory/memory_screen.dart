@@ -7,10 +7,9 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:http/http.dart' as http;
 import 'MemoryDetailPage.dart';
 import 'api_service.dart'; // Đảm bảo bạn có file này hoặc xóa dòng này đi nếu chưa cần
+import 'package:nhoapp/constants/app_colors.dart';
+import 'package:nhoapp/widgets/app_bar.dart';
 
-// --- CONSTANTS ---
-const Color kPrimaryColor = Color(0xFF009688);
-const Color kBackgroundColor = Color(0xFFF2F4F8);
 
 class MemoryPage extends StatefulWidget {
   const MemoryPage({super.key});
@@ -110,22 +109,25 @@ class _MemoryPageState extends State<MemoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBackgroundColor,
-      appBar: AppBar(
-        title: const Text("Góc Ký Ức", style: TextStyle(color: Colors.white)),
-        backgroundColor: kPrimaryColor,
-        centerTitle: true,
-        actions: [IconButton(icon: const Icon(Icons.refresh, color: Colors.white), onPressed: _fetchMemories)],
+      backgroundColor: AppColors.surface,
+      appBar: NhoAppBar(
+        title: "Ký ức của tôi",
+        actions: [
+          IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              onPressed: _fetchMemories
+          )
+          ],
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: kPrimaryColor,
+        backgroundColor: AppColors.primary,
         onPressed: _openAddSheet,
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _memories.isEmpty
-          ? const Center(child: Text("Chưa có ký ức nào"))
+          ? const Center(child: Text("Chưa có ký ức nào",))
           : RefreshIndicator(
         onRefresh: _fetchMemories,
         child: ListView.builder(
@@ -378,7 +380,7 @@ class _AddMemorySheetState extends State<AddMemorySheet> {
             width: double.infinity, height: 50,
             child: ElevatedButton(
               onPressed: _uploading ? null : _submit,
-              style: ElevatedButton.styleFrom(backgroundColor: kPrimaryColor),
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
               child: _uploading ? const CircularProgressIndicator(color: Colors.white) : const Text("ĐĂNG", style: TextStyle(color: Colors.white)),
             ),
           )

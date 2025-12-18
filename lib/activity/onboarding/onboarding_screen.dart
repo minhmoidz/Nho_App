@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nhoapp/constants/app_colors.dart';
+import 'package:nhoapp/activity/onboarding/onboarding_screen.dart';
+import 'package:nhoapp/widgets/auth_check.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -17,7 +19,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     await prefs.setBool('hasSeenOnboarding', true);
 
     if (context.mounted) {
-      Navigator.pushReplacementNamed(context, '/home');
+      if (context.mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const AuthCheck()),
+        );
+      }
     }
   }
 
@@ -51,7 +58,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       pages: [
         PageViewModel(
           title: "Chào mừng đến với\nNhớ App",
-          body: "Trợ lý ảo thông minh hỗ trợ sức khỏe và cuộc sống dành riêng cho bạn.",
+          body: "Ứng dụng thông minh hỗ trợ sức khỏe và cuộc sống dành riêng cho bạn.",
           image: _buildImage('logo-remove-bg.png', 280),
           decoration: pageDecoration,
         ),
@@ -64,7 +71,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         PageViewModel(
           title: "Kết nối & Giải trí",
           body: "Đọc báo, nghe nhạc và trò chuyện cùng trợ lý ảo AI mọi lúc mọi nơi.",
-          image: Icon(Icons.people_outline, size: 150, color: Colors.orange.shade400),
+          image: Icon(Icons.people_outline, size: 150, color: AppColors.primary.withOpacity(0.8)),
           decoration: pageDecoration,
         ),
       ],
@@ -102,24 +109,34 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ),
 
       // 3. Nút Hoàn tất (Done/Bắt đầu) - Nút dài, đậm, kêu gọi hành động
-      done: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        decoration: BoxDecoration(
-            color: AppColors.primary, // Nền đậm
-            borderRadius: BorderRadius.circular(30), // Bo tròn
+      done: SizedBox(
+        width: double.infinity,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
                 color: AppColors.primary.withOpacity(0.4),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               )
-            ]
-        ),
-        child: const Text(
-          'Bắt đầu',
-          style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white, fontSize: 16),
+            ],
+          ),
+          child: const Center(
+            child: Text(
+              'Bắt đầu',
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+                fontSize: 18,
+              ),
+            ),
+          ),
         ),
       ),
+
 
       // Hiệu ứng chuyển trang & Vị trí nút
       curve: Curves.fastLinearToSlowEaseIn,

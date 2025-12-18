@@ -3,13 +3,14 @@ import 'package:nhoapp/constants/app_colors.dart';
 import './profile_api_service.dart';
 import './user_profile.dart';
 import 'package:intl/intl.dart';
+import 'package:nhoapp/widgets/app_bar.dart';
 
 class UpdateProfileScreen extends StatefulWidget {
-  final UserProfile user;
+  final UserProfile? user;
 
   const UpdateProfileScreen({
     super.key,
-    required this.user,
+    this.user,
   });
 
   @override
@@ -32,19 +33,24 @@ class _UpdateProfileScreen extends State<UpdateProfileScreen> {
 
     final user = widget.user;
 
-    _fullNameController.text = user.fullName;
-    _phoneController.text = user.phone;
-    _addressController.text = user.address ?? '';
+    if (user != null) {
+      _fullNameController.text = user.fullName;
+      _phoneController.text = user.phone;
+      _addressController.text = user.address ?? '';
 
-    if (user.birthDate.isNotEmpty) {
-      _selectedBirthDate = DateTime.parse(user.birthDate);
-
-      _birthDateController.text =
-          DateFormat('dd/MM/yyyy').format(_selectedBirthDate!);
-
-      _ageController.text = _calculateAge(_selectedBirthDate!).toString();
+      if (user.birthDate.isNotEmpty) {
+        _selectedBirthDate = DateTime.parse(user.birthDate);
+        _birthDateController.text =
+            DateFormat('dd/MM/yyyy').format(_selectedBirthDate!);
+        _ageController.text = _calculateAge(_selectedBirthDate!).toString();
+      }
+    } else {
+      _fullNameController.text = '';
+      _phoneController.text = '';
+      _addressController.text = '';
     }
   }
+
 
   @override
   void dispose() {
@@ -164,43 +170,13 @@ class _UpdateProfileScreen extends State<UpdateProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new,
-            color: AppColors.primary,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
+      appBar: NhoAppBar(title: "Cập nhật tài khoản"),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 10),
-
-              // Header
-              Text(
-                "Cập nhật hồ sơ",
-                style: TextStyle(
-                  color: Colors.grey[900],
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-
-              Text(
-                "Chỉnh sửa thông tin cá nhân của bạn",
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 16,
-                ),
-              ),
               const SizedBox(height: 40),
 
               // Form Card

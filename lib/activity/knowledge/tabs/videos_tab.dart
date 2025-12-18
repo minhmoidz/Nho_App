@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../knowledge_data.dart';
-import '../video_player_chat_screen.dart'; // Import file màn hình chi tiết vừa tạo
+import '../screen/video_player_chat_screen.dart'; // Import file màn hình chi tiết vừa tạo
 
 class VideosTab extends StatelessWidget {
   const VideosTab({super.key});

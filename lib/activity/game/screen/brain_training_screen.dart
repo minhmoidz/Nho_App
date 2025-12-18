@@ -47,7 +47,6 @@ class _BrainTrainingScreenState extends State<BrainTrainingScreen> {
                   const Text(
                     'Rèn Luyện Trí Não',
                     style: TextStyle(
-                      color: AppColors.secondary,
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
@@ -151,7 +150,6 @@ class _BrainTrainingScreenState extends State<BrainTrainingScreen> {
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.secondary,
                 ),
               ),
               const SizedBox(height: 20),

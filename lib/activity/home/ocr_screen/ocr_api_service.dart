@@ -63,7 +63,7 @@ class OcrApiService {
 
       debugPrint('HTTP Status Code: ${response.statusCode}');
 
-      // Giải mã body response (dùng utf8 để không lỗi font tiếng Việt)
+      // Giải mã body response (dùng utf8 để không lỗi fonts tiếng Việt)
       final responseBody = utf8.decode(response.bodyBytes);
       debugPrint('Response Body: $responseBody');
 

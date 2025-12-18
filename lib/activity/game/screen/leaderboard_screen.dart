@@ -2,8 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:nhoapp/activity/game/services/score_service.dart';
-
-import 'models/game_score.dart';
+import 'package:nhoapp/constants/app_colors.dart';
+import 'package:nhoapp/widgets/app_bar.dart';
+import '../models/game_score.dart';
 
 class LeaderboardScreen extends StatefulWidget {
   const LeaderboardScreen({Key? key}) : super(key: key);
@@ -43,22 +44,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF2E7D32)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Bảng Xếp Hạng',
-          style: TextStyle(
-            color: Color(0xFF2E7D32),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-      ),
+      appBar: NhoAppBar(title: "Bảng xếp hạng"),
       body: SafeArea(
         child: Column(
           children: [
@@ -68,7 +54,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF4CAF50), Color(0xFF81C784)],
+                  colors: [AppColors.primary, AppColors.primary],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -188,17 +174,18 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       child: FilterChip(
         selected: isSelected,
         label: Text('$label ($count)'),
+        checkmarkColor: Colors.white,
         labelStyle: TextStyle(
-          color: isSelected ? Colors.white : const Color(0xFF2E7D32),
+          color: isSelected ? Colors.white : AppColors.primary,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           fontSize: 15,
         ),
         backgroundColor: Colors.white,
-        selectedColor: const Color(0xFF4CAF50),
+        selectedColor: AppColors.primary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
           side: BorderSide(
-            color: isSelected ? const Color(0xFF4CAF50) : Colors.grey[300]!,
+            color: isSelected ? AppColors.primary : Colors.grey[300]!,
             width: 2,
           ),
         ),

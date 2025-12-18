@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart'; // Import thư viện biểu đồ
 import 'health_api_service.dart';
+import 'package:nhoapp/constants/app_colors.dart';
+import 'package:nhoapp/widgets/app_bar.dart';
 
 class HealthScreen extends StatefulWidget {
   const HealthScreen({Key? key}) : super(key: key);
@@ -12,10 +14,7 @@ class HealthScreen extends StatefulWidget {
 
 class _HealthScreenState extends State<HealthScreen> {
   // --- MÀU SẮC & THEME ---
-  final Color _primaryColor = const Color(0xFF0D47A1); // Xanh đậm hơn cho độ tương phản cao
-  final Color _secondaryColor = const Color(0xFF42A5F5);
   final Color _backgroundColor = const Color(0xFFF0F4F8);
-  final Color _cardColor = Colors.white;
 
   // --- STATE DỮ LIỆU ---
   bool _isLoading = false;
@@ -70,7 +69,7 @@ class _HealthScreenState extends State<HealthScreen> {
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: const Text('Đã lưu thành công!'), backgroundColor: _primaryColor),
+          SnackBar(content: const Text('Đã lưu thành công!'), backgroundColor: Colors.green),
         );
       }
       await _refreshData();
@@ -128,17 +127,17 @@ class _HealthScreenState extends State<HealthScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _backgroundColor,
-      appBar: AppBar(
-        title: const Text('Sức Khỏe Của Bạn', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: _primaryColor,
-        elevation: 0,
-        centerTitle: true,
+      appBar: NhoAppBar(
+        title: "Sức khỏe của tôi",
         actions: [
-          IconButton(icon: const Icon(Icons.refresh), onPressed: _refreshData),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _refreshData, color: Colors.white,
+          ),
         ],
       ),
       body: _isLoading && _logs.isEmpty
-          ? Center(child: CircularProgressIndicator(color: _primaryColor))
+          ? Center(child: CircularProgressIndicator(color: AppColors.primary))
           : RefreshIndicator(
         onRefresh: _refreshData,
         child: SingleChildScrollView(
@@ -191,9 +190,9 @@ class _HealthScreenState extends State<HealthScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showAddModal,
-        backgroundColor: _primaryColor,
-        icon: const Icon(Icons.add_task, size: 28),
-        label: const Text("GHI CHỈ SỐ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        backgroundColor: AppColors.primary,
+        icon: const Icon(Icons.add_task, size: 28, color: Colors.white,),
+        label: const Text("GHI CHỈ SỐ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
       ),
     );
   }
@@ -203,7 +202,7 @@ class _HealthScreenState extends State<HealthScreen> {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 25),
       decoration: BoxDecoration(
-        color: _primaryColor,
+        color: AppColors.primary,
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(30),
           bottomRight: Radius.circular(30),
@@ -253,17 +252,17 @@ class _HealthScreenState extends State<HealthScreen> {
           Container(
             padding: const EdgeInsets.all(15),
             decoration: BoxDecoration(
-              color: Colors.orange.shade50,
+              color: AppColors.background,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: Row(
               children: [
-                Icon(Icons.health_and_safety, color: Colors.orange.shade800, size: 30),
+                Icon(Icons.health_and_safety, color: AppColors.secondary, size: 30),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     "Trợ lý sức khỏe AI",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.orange.shade900),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.secondary),
                   ),
                 ),
               ],
@@ -315,8 +314,9 @@ class _HealthScreenState extends State<HealthScreen> {
           return ChoiceChip(
             label: Text(type),
             selected: isSelected,
-            selectedColor: _primaryColor,
-            labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black87, fontWeight: FontWeight.bold),
+            selectedColor: AppColors.primary,
+            checkmarkColor: Colors.white,
+            labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black, fontWeight: FontWeight.bold),
             onSelected: (val) {
               if (val) setState(() => _selectedChartType = type);
             },
@@ -367,11 +367,11 @@ class _HealthScreenState extends State<HealthScreen> {
             LineChartBarData(
               spots: spots,
               isCurved: true,
-              color: _secondaryColor,
+              color: AppColors.secondary,
               barWidth: 4,
               isStrokeCapRound: true,
               dotData: FlDotData(show: true),
-              belowBarData: BarAreaData(show: true, color: _secondaryColor.withOpacity(0.2)),
+              belowBarData: BarAreaData(show: true, color: AppColors.secondary.withOpacity(0.2)),
             ),
           ],
         ),
@@ -398,8 +398,8 @@ class _HealthScreenState extends State<HealthScreen> {
           ),
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor: _secondaryColor.withOpacity(0.1),
-              child: Icon(_getIconForType(item['log_type']), color: _primaryColor),
+              backgroundColor: AppColors.secondary.withOpacity(0.1),
+              child: Icon(_getIconForType(item['log_type']), color: AppColors.primary),
             ),
             title: Text(
               '${item['log_type']}: ${item['value']}',
@@ -435,7 +435,7 @@ class _HealthScreenState extends State<HealthScreen> {
           children: [
             Container(width: 40, height: 5, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10))),
             const SizedBox(height: 20),
-            Text('Ghi Nhận Chỉ Số', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: _primaryColor)),
+            Text('Ghi Nhận Chỉ Số', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.primary)),
             const SizedBox(height: 30),
 
             // Chọn loại (Dạng Grid nút bấm to dễ chọn)
@@ -453,7 +453,7 @@ class _HealthScreenState extends State<HealthScreen> {
                       width: 80,
                       margin: const EdgeInsets.only(right: 10),
                       decoration: BoxDecoration(
-                        color: isSelected ? _primaryColor : Colors.grey[100],
+                        color: isSelected ? AppColors.primary : Colors.grey[100],
                         borderRadius: BorderRadius.circular(12),
                         border: isSelected ? null : Border.all(color: Colors.grey.shade300),
                       ),
@@ -501,7 +501,7 @@ class _HealthScreenState extends State<HealthScreen> {
               child: ElevatedButton(
                 onPressed: _submitLog,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _primaryColor,
+                  backgroundColor: AppColors.primary,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                 ),
                 child: const Text('LƯU LẠI', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),

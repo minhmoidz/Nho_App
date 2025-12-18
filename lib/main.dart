@@ -6,12 +6,11 @@ import 'package:timezone/data/latest.dart' as tz; // Import timezone
 import 'activity/home/home_screen.dart';
 import 'activity/home/reminder/AlarmScreen.dart'; // Màn hình đọc báo thức
 import 'activity/home/reminder/notification_helper.dart';
-import 'activity/login/auth_service.dart';
 import 'activity/login/login_page.dart';
 import 'activity/login/register_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
-import 'activity/wailet/onboarding/onboarding_screen.dart';
+import 'package:nhoapp/widgets/splash_screen.dart';
+import 'package:nhoapp/activity/onboarding/onboarding_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -83,7 +82,7 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         primarySwatch: Colors.green,
         useMaterial3: true,
-        fontFamily: 'Roboto',
+        fontFamily: 'Montserrat',
         scaffoldBackgroundColor: const Color(0xFFF8FAFC),
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
@@ -110,60 +109,18 @@ class _MyAppState extends State<MyApp> {
       ],
 
       // Logic kiểm tra đăng nhập
-      home: const AuthCheck(),
+      home: const SplashScreen(),
 
       // Định nghĩa các route cơ bản
       routes: {
         '/login': (context) => const LoginPage(),
+        '/onboarding': (context) => const OnboardingScreen(),
+        ''
         '/register': (context) => const RegisterPage(),
         '/home': (context) => const HomePage(),
-        '/onboarding': (context) => const OnboardingScreen(),
       },
     );
   }
 }
 
-// Widget kiểm tra trạng thái đăng nhập
-class AuthCheck extends StatefulWidget {
-  const AuthCheck({super.key});
-
-  @override
-  State<AuthCheck> createState() => _AuthCheckState();
-}
-
-class _AuthCheckState extends State<AuthCheck> {
-  final AuthService _authService = AuthService();
-  bool _isLoading = true;
-  bool _isLoggedIn = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkLoginStatus();
-  }
-
-  Future<void> _checkLoginStatus() async {
-    // Thử lấy token/userid
-    final userId = await _authService.getUserId();
-    if (mounted) {
-      setState(() {
-        _isLoggedIn = userId != null;
-        _isLoading = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
-    return _isLoggedIn ? const HomePage() : const LoginPage();
-  }
-}
 

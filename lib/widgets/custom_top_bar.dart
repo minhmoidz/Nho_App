@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nhoapp/constants/app_colors.dart';
 
 class CustomTopBar extends StatelessWidget {
   final String appName;
@@ -23,7 +24,7 @@ class CustomTopBar extends StatelessWidget {
     return SafeArea(
       bottom: false,
       child: Container(
-        color: Colors.transparent,
+        color: AppColors.surface,
         padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
         child: Row(
           children: [

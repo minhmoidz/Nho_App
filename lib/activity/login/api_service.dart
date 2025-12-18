@@ -33,7 +33,7 @@ class ApiService {
     debugPrint('API Response Status: ${response.statusCode}');
 
     try {
-      // Decode UTF-8 để hiển thị tiếng Việt không bị lỗi font
+      // Decode UTF-8 để hiển thị tiếng Việt không bị lỗi fonts
       final body = json.decode(utf8.decode(response.bodyBytes));
 
       if (response.statusCode >= 200 && response.statusCode < 300) {

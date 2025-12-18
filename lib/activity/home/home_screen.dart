@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:nhoapp/activity/home/reminder/manual_reminder_screen.dart';
-import 'package:nhoapp/activity/home/reminders/create_diary_screen.dart';
+import 'package:nhoapp/activity/home/reminder/reminder_screen.dart';
+import 'package:nhoapp/activity/home/diary/create_diary_screen.dart';
 import 'package:nhoapp/activity/home/sos/sos_screen.dart';
 import 'package:nhoapp/constants/app_colors.dart';
 import '../chatbot/screens/voice_chat_screen.dart';
-import '../knowledge/knowledge_screen.dart';
+import '../knowledge/screen/knowledge_screen.dart';
 import '../login/auth_service.dart';
 import '../notification/notifications_page.dart'; // Đảm bảo đã import file này
 import '../profile/profile_screen.dart';
-import '../game/brain_training_screen.dart';
-import '../thunghiem/new.dart';
-import '../wailet/bottom_nav_bar.dart';
-import '../wailet/custom_top_bar.dart';
+import '../game/screen/brain_training_screen.dart';
+import '../testing/new.dart';
+import '../../widgets/bottom_nav_bar.dart';
+import '../../widgets/custom_top_bar.dart';
 import 'health/health_diary_screen.dart';
-import 'memory/memory_page.dart';
+import 'memory/memory_screen.dart';
 import 'ocr_screen/ocr_screen.dart';
 
 class HomePage extends StatefulWidget {

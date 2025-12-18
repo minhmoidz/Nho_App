@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_tts/flutter_tts.dart'; // --- MỚI THÊM: Import TTS ---
+import 'package:nhoapp/constants/app_colors.dart';
+import 'package:nhoapp/widgets/app_bar.dart';
 
 // --- IMPORTS SERVICES ---
 import 'diary_api_service.dart';
@@ -242,33 +244,23 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: surfaceColor,
-      appBar: AppBar(
-        backgroundColor: surfaceColor,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: onSurfaceColor),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Tạo Note Mới',
-          style: TextStyle(color: onSurfaceColor, fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          if (!_isUploading)
-            Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: TextButton(
-                onPressed: _saveDiaryEntry,
-                style: TextButton.styleFrom(
-                  foregroundColor: primaryColor,
-                  textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: NhoAppBar(
+          title: "Ghi chú",
+          actions: [
+            if (!_isUploading)
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: TextButton(
+                  onPressed: _saveDiaryEntry,
+                  style: TextButton.styleFrom(
+                    foregroundColor: primaryColor,
+                    textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+                  ),
+                  child: const Text('LƯU', style:TextStyle(color: Colors.white),),
                 ),
-                child: const Text('LƯU'),
-              ),
-            )
-        ],
+              )
+          ],
       ),
       body: _isUploading
           ? const Center(
@@ -420,7 +412,7 @@ class _CreateDiaryScreenState extends State<CreateDiaryScreen> {
                 boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10)],
               ),
               child: SwitchListTile(
-                activeColor: primaryColor,
+                activeColor: AppColors.primary,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 title: const Row(
                   children: [

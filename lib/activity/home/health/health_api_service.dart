@@ -86,7 +86,7 @@ class HealthApiService {
       // debugPrint('⬅️ Body: ${response.body}'); // Bỏ comment nếu muốn xem full data
 
       if (response.statusCode == 200) {
-        // Decode UTF-8 để không lỗi font tiếng Việt
+        // Decode UTF-8 để không lỗi fonts tiếng Việt
         final List<dynamic> data = json.decode(utf8.decode(response.bodyBytes));
         debugPrint('✅ Đã lấy được ${data.length} bản ghi.');
         return data;

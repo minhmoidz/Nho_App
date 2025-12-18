@@ -83,7 +83,7 @@ class ReminderApiService {
     required DateTime remindAt,
     required bool isCompleted,
   }) async {
-    // SỬA: Dùng /reminder thay vì /reminders
+    // SỬA: Dùng /reminder thay vì /diary
     final url = Uri.parse('$_baseUrl/reminder/$id');
     final headers = await _getHeaders();
 

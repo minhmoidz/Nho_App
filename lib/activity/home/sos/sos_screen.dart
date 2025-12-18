@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart'; // Thư viện gọi điện
+import 'package:nhoapp/constants/app_colors.dart';
+import 'package:nhoapp/widgets/app_bar.dart';
 
 class SOSPage extends StatefulWidget {
   const SOSPage({super.key});
@@ -58,23 +60,7 @@ class _SOSPageState extends State<SOSPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        backgroundColor: Colors.red[600],
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'KHẨN CẤP',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 24,
-          ),
-        ),
-        centerTitle: true,
-      ),
+      appBar: const NhoAppBar(title: 'Khẩn cấp'),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -142,14 +128,14 @@ class _SOSPageState extends State<SOSPage> {
               const SizedBox(height: 30),
 
               // --- NGƯỜI THÂN ---
-              _buildSectionTitle('NGƯỜI THÂN', Icons.family_restroom, Colors.blue[700]!),
+              _buildSectionTitle('NGƯỜI THÂN', Icons.family_restroom, AppColors.primary),
               const SizedBox(height: 15),
 
               ...relatives.asMap().entries.map((entry) {
                 return _buildContactCard(
                   entry.value['name']!,
                   entry.value['phone']!,
-                  Colors.blue,
+                  AppColors.primary,
                   index: entry.key,
                   isRelative: true,
                 );
@@ -160,14 +146,14 @@ class _SOSPageState extends State<SOSPage> {
               const SizedBox(height: 30),
 
               // --- BÁC SĨ / Y TẾ ---
-              _buildSectionTitle('BÁC SĨ & PHÒNG KHÁM', Icons.local_hospital, Colors.green[700]!),
+              _buildSectionTitle('BÁC SĨ & PHÒNG KHÁM', Icons.local_hospital, AppColors.primary),
               const SizedBox(height: 15),
 
               ...medicalContacts.asMap().entries.map((entry) {
                 return _buildContactCard(
                   entry.value['name']!,
                   entry.value['phone']!,
-                  Colors.green,
+                  AppColors.primary,
                   index: entry.key,
                   isRelative: false,
                 );
@@ -178,7 +164,7 @@ class _SOSPageState extends State<SOSPage> {
               const SizedBox(height: 30),
 
               // --- SỐ KHẨN CẤP ---
-              _buildSectionTitle('SỐ KHẨN CẤP', Icons.emergency, Colors.orange[800]!),
+              _buildSectionTitle('SỐ KHẨN CẤP', Icons.emergency, AppColors.primary),
               const SizedBox(height: 15),
 
               _buildEmergencyCard('113', 'CẢNH SÁT', Icons.local_police, Colors.blue[700]!),
@@ -291,7 +277,7 @@ class _SOSPageState extends State<SOSPage> {
               width: 55,
               height: 55,
               decoration: BoxDecoration(
-                color: Colors.green,
+                color: AppColors.primary,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
@@ -442,7 +428,7 @@ class _SOSPageState extends State<SOSPage> {
               ),
             ),
             const SizedBox(height: 25),
-            _buildOptionButton('Chỉnh sửa', Icons.edit, Colors.blue, () {
+            _buildOptionButton('Chỉnh sửa', Icons.edit, AppColors.primary, () {
               Navigator.pop(context);
               _showEditContactDialog(index, isRelative);
             }),
@@ -467,7 +453,7 @@ class _SOSPageState extends State<SOSPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Hủy', style: TextStyle(fontSize: 18, color: Colors.grey)),
+            child: const Text('Hủy', style: TextStyle(fontSize: 18, color: Colors.black)),
           ),
           TextButton(
             onPressed: () {
@@ -622,7 +608,7 @@ class _SOSPageState extends State<SOSPage> {
                       child: ElevatedButton(
                         onPressed: onSave,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
+                          backgroundColor: AppColors.primary,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         child: const Text('LƯU',

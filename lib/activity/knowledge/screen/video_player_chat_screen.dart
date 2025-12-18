@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:nhoapp/constants/app_colors.dart';
-import '../chatbot/services/gemini_service.dart';
+import '../../chatbot/services/gemini_service.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
-import 'knowledge_data.dart';
+import '../knowledge_data.dart';
 
 class VideoPlayerChatScreen extends StatefulWidget {
   final VideoItem video;
@@ -135,8 +135,12 @@ class _VideoPlayerChatScreenState extends State<VideoPlayerChatScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: Text(widget.video.title, style: const TextStyle(fontSize: 16)),
-        backgroundColor: AppColors.secondary,
+        title: Text(widget.video.title, style: const TextStyle(fontSize: 16, color: Colors.white)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, size: 28, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        backgroundColor: AppColors.primary,
       ),
       body: Column(
         children: [

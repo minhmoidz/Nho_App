@@ -9,7 +9,7 @@ import '../models/chat_model.dart';
 class ApiService {
   final AuthService _authService = AuthService(); // Khởi tạo AuthService
 
-  String get baseUrl => dotenv.env['API_BASE_URL'] ?? "http://192.168.30.28:8010";
+   final String baseUrl = dotenv.env['API_BASE_URL']!;
 
   // --- HÀM TẠO HEADERS ĐỘNG ---
   // Headers giờ phải là Future vì cần đợi đọc Token từ SecureStorage

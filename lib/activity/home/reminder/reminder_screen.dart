@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:nhoapp/constants/app_colors.dart';
+import 'package:nhoapp/widgets/app_bar.dart';
 
 // Đảm bảo bạn đã import đúng đường dẫn các file này
 import 'reminder_api_service.dart';
@@ -308,20 +310,8 @@ class _ReminderScreenState extends State<ReminderScreen> with WidgetsBindingObse
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      appBar: AppBar(
-        toolbarHeight: 80,
-        title: const Column(
-          children: [
-            Text('NHẮC THUỐC & VIỆC', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            Text('(Dữ liệu lưu trong máy)', style: TextStyle(fontSize: 14)),
-          ],
-        ),
-        centerTitle: true,
-        backgroundColor: _primaryColor,
-        foregroundColor: Colors.white,
-      ),
-
+      backgroundColor: AppColors.surface,
+      appBar: const NhoAppBar(title: "Nhắc nhở"),
       body: _reminders.isEmpty && !_isLoading
           ? _buildEmptyState()
           : RefreshIndicator(
@@ -337,7 +327,7 @@ class _ReminderScreenState extends State<ReminderScreen> with WidgetsBindingObse
         width: 75, height: 75,
         child: FloatingActionButton(
           onPressed: () => _showModal(),
-          backgroundColor: _primaryColor,
+          backgroundColor: AppColors.primary,
           child: const Icon(Icons.add, size: 40, color: Colors.white),
         ),
       ),
@@ -353,7 +343,7 @@ class _ReminderScreenState extends State<ReminderScreen> with WidgetsBindingObse
           const SizedBox(height: 20),
           Text('Chưa có việc nào', style: TextStyle(fontSize: 22, color: Colors.grey[600])),
           const SizedBox(height: 10),
-          Text('Bấm dấu (+) để thêm', style: TextStyle(fontSize: 18, color: _primaryColor)),
+          Text('Bấm dấu (+) để thêm', style: TextStyle(fontSize: 18, color: AppColors.primary)),
         ],
       ),
     );
