@@ -84,6 +84,7 @@ flutter:
   assets:
     - images/robot.png
     - images/nhoapp.png
+    - images/logo-remove-bg.png
     - images/icon.png
     - .env
     - assets/images/plank.gif

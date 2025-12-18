@@ -32,40 +32,60 @@ class _BrainTrainingScreenState extends State<BrainTrainingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        title: const Text(
-          'Rèn Luyện Trí Não',
-          style: TextStyle(
-            color: AppColors.secondary,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.emoji_events, color: AppColors.secondary, size: 28),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const LeaderboardScreen()),
-              );
-            },
-          ),
-        ],
-      ),
+      backgroundColor: Colors.grey[50],
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Info
+              // Custom Header với title và icon
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Rèn Luyện Trí Não',
+                    style: TextStyle(
+                      color: AppColors.secondary,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.emoji_events,
+                        color: AppColors.secondary,
+                        size: 28,
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LeaderboardScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Header Info Card
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [AppColors.primary, AppColors.primary],
@@ -73,13 +93,20 @@ class _BrainTrainingScreenState extends State<BrainTrainingScreen> {
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.3),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
                     Container(
                       padding: const EdgeInsets.all(15),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.white.withOpacity(0.2),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -160,6 +187,7 @@ class _BrainTrainingScreenState extends State<BrainTrainingScreen> {
                 bestScore: _scoreService.getBestScore('sound_guess'),
                 onTap: () => _navigateToGame(context, const SoundGuessGame()),
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),
