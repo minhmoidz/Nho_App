@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Rung phản hồi
+import 'package:flutter/services.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -10,8 +10,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:nhoapp/constants/app_colors.dart';
-
-// --- CÁC THƯ VIỆN ĐỂ UPLOAD ẢNH ---
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
 import '../../login/auth_service.dart';
@@ -29,7 +27,6 @@ class VoiceChatScreen extends StatefulWidget {
 }
 
 class _VoiceChatScreenState extends State<VoiceChatScreen> with TickerProviderStateMixin {
-  // CẤU HÌNH API
   static String uri = dotenv.env['API_BASE_URL']!;
   static String _baseUrl = uri + '/api/v1';
 
@@ -56,9 +53,7 @@ class _VoiceChatScreenState extends State<VoiceChatScreen> with TickerProviderSt
   bool _isCameraOn = false;
   String _liveVoiceText = "";
 
-  // BIẾN QUAN TRỌNG: Lưu tác vụ OCR đang chạy ngầm
   Future<String>? _pendingAnalysisTask;
-
   static const String KEY_LAST_CHAT_ID = "LAST_CHAT_ID";
 
   @override
@@ -70,25 +65,21 @@ class _VoiceChatScreenState extends State<VoiceChatScreen> with TickerProviderSt
     );
 
     _setupTTS();
-    // Gọi khởi tạo với try-catch để debug lỗi không tải được lịch sử
     _initializeChat().catchError((e) {
-      debugPrint("❌ Lỗi khởi tạo: $e");
+      debugPrint("Error initializing: $e");
       if (mounted) setState(() => _isLoadingMessages = false);
     });
   }
 
-  // ==================== 1. TỐI ƯU TẢI LỊCH SỬ ====================
-
   Future<void> _initializeChat() async {
-    // Kiểm tra token trước
     final token = await _authService.getToken();
     if (token == null) {
-      debugPrint("⚠️ Chưa có Token, không thể tải lịch sử.");
+      debugPrint("No token, cannot load history");
       if (mounted) setState(() => _isLoadingMessages = false);
       return;
     }
 
-    await _loadHistoryList(); // Tải danh sách lịch sử về trước
+    await _loadHistoryList();
 
     String targetId = "";
     if (widget.conversationId.isNotEmpty) {
@@ -97,7 +88,6 @@ class _VoiceChatScreenState extends State<VoiceChatScreen> with TickerProviderSt
       final prefs = await SharedPreferences.getInstance();
       String? savedId = prefs.getString(KEY_LAST_CHAT_ID);
 
-      // Ưu tiên ID đã lưu -> Nếu không thì lấy bài mới nhất trong lịch sử
       if (savedId != null && savedId.isNotEmpty) {
         targetId = savedId;
       } else if (_historyList.isNotEmpty) {
@@ -106,7 +96,6 @@ class _VoiceChatScreenState extends State<VoiceChatScreen> with TickerProviderSt
     }
 
     if (targetId.isNotEmpty) {
-      debugPrint("👉 Đang tải hội thoại ID: $targetId");
       await _switchConversation(targetId, saveToHistory: true, closeMenu: false);
     } else {
       if (mounted) setState(() => _isLoadingMessages = false);
@@ -116,11 +105,9 @@ class _VoiceChatScreenState extends State<VoiceChatScreen> with TickerProviderSt
   Future<void> _loadHistoryList() async {
     try {
       final history = await _apiService.getHistory();
-      debugPrint("✅ Đã tải ${history.length} cuộc hội thoại.");
       if (mounted) setState(() => _historyList = history);
     } catch (e) {
-      debugPrint("❌ Lỗi tải lịch sử: $e");
-      // Không throw lỗi để app vẫn chạy tiếp được
+      debugPrint("Error loading history: $e");
     }
   }
 
@@ -140,28 +127,21 @@ class _VoiceChatScreenState extends State<VoiceChatScreen> with TickerProviderSt
         _scrollToBottom();
       }
     } catch (e) {
-      debugPrint("❌ Lỗi tải chi tiết chat: $e");
+      debugPrint("Error loading messages: $e");
       if (mounted) setState(() => _isLoadingMessages = false);
     }
   }
 
-  // ==================== 2. TÁC VỤ NGẦM: CHỤP & PHÂN TÍCH ====================
-
-  // Hàm này sẽ chạy NGAY LẬP TỨC khi bắt đầu nói (không chờ nói xong)
   Future<String> _captureAndAnalyzeInBackground() async {
     if (!_isCameraOn || _cameraController == null || !_cameraController!.value.isInitialized) {
       return "";
     }
 
     try {
-      debugPrint("📸 [Background] Đang chụp ảnh...");
       final XFile image = await _cameraController!.takePicture();
-      debugPrint("📸 [Background] Đã chụp xong, bắt đầu gửi API...");
-
-      // Gọi hàm OCR (Code cũ)
       return await _callOcrApi(image);
     } catch (e) {
-      debugPrint("❌ [Background] Lỗi chụp/phân tích: $e");
+      debugPrint("Error capture/analyze: $e");
       return "Lỗi phân tích hình ảnh: $e";
     }
   }
@@ -194,7 +174,6 @@ class _VoiceChatScreenState extends State<VoiceChatScreen> with TickerProviderSt
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = json.decode(responseBody);
-        // Logic lấy kết quả (tuỳ backend trả về)
         if (data is Map<String, dynamic>) {
           if (data['data'] != null && data['data'] is Map && data['data']['analysis'] != null) {
             return data['data']['analysis'].toString();
@@ -202,7 +181,7 @@ class _VoiceChatScreenState extends State<VoiceChatScreen> with TickerProviderSt
           if (data['analysis'] != null) return data['analysis'].toString();
           if (data['result'] != null) return data['result'].toString();
         }
-        return "Đã phân tích ảnh (Dữ liệu thô): $responseBody";
+        return "Đã phân tích ảnh: $responseBody";
       } else {
         return "Lỗi Server OCR (${response.statusCode})";
       }
@@ -211,29 +190,21 @@ class _VoiceChatScreenState extends State<VoiceChatScreen> with TickerProviderSt
     }
   }
 
-  // ==================== 3. XỬ LÝ VOICE THÔNG MINH ====================
-
   Future<void> _startListening() async {
     if (_isSpeaking) await _stopSpeaking();
 
-    // Reset tác vụ OCR cũ
     _pendingAnalysisTask = null;
 
-    // --- QUAN TRỌNG: KÍCH HOẠT OCR NGẦM NGAY LÚC NÀY ---
     if (_isCameraOn) {
-      // Gán Future vào biến để đợi sau này
       _pendingAnalysisTask = _captureAndAnalyzeInBackground();
-
-      // Hiển thị thông báo nhỏ
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("📸 Đang chụp và phân tích ảnh..."),
-            duration: Duration(seconds: 1),
-            backgroundColor: Colors.blueAccent,
-          )
+        const SnackBar(
+          content: Text("📸 Đang chụp và phân tích ảnh..."),
+          duration: Duration(seconds: 1),
+          backgroundColor: Colors.blueAccent,
+        ),
       );
     }
-    // ----------------------------------------------------
 
     HapticFeedback.heavyImpact();
     bool available = await _speech.initialize(
@@ -252,12 +223,10 @@ class _VoiceChatScreenState extends State<VoiceChatScreen> with TickerProviderSt
 
       _speech.listen(
         localeId: "vi_VN",
-        // Chế độ dictation giúp nhận diện tốt hơn cho câu dài
         listenMode: stt.ListenMode.dictation,
-        // Tăng thời gian chờ im lặng lên 5 giây (mặc định thường là 2-3s)
         pauseFor: const Duration(seconds: 5),
         listenFor: const Duration(seconds: 60),
-        cancelOnError: false, // Không tắt nếu lỗi nhỏ
+        cancelOnError: false,
         partialResults: true,
         onResult: (result) {
           setState(() {
@@ -293,8 +262,6 @@ class _VoiceChatScreenState extends State<VoiceChatScreen> with TickerProviderSt
     }
   }
 
-  // ==================== 4. GỘP KẾT QUẢ VÀ GỬI ====================
-
   Future<void> _handleSend(String text) async {
     if (_isSpeaking) await _stopSpeaking();
     if (_isListening) await _stopListening(sendNow: false);
@@ -313,21 +280,9 @@ class _VoiceChatScreenState extends State<VoiceChatScreen> with TickerProviderSt
     _textController.clear();
     String finalMessageToSend = text;
 
-    // --- ĐỢI KẾT QUẢ OCR (NẾU CÓ) ---
     if (_isCameraOn && _pendingAnalysisTask != null) {
       try {
-        // Thông báo nếu OCR vẫn chưa xong (trường hợp bạn nói quá nhanh)
-        // setState(() {
-        //   _messages.add(ChatMessage(content: "⏳ Đang đợi kết quả phân tích ảnh...", isUser: true));
-        // });
-        // _scrollToBottom();
-
-        // AWAIT: Đợi tác vụ ngầm (đã chạy từ lúc bấm mic) hoàn thành
-        debugPrint("⏳ Đang đợi kết quả OCR từ tác vụ ngầm...");
         String analysisResult = await _pendingAnalysisTask!;
-        debugPrint("✅ Đã nhận kết quả OCR: $analysisResult");
-
-        // Ghép chuỗi
         finalMessageToSend = """
 [CÂU HỎI NGƯỜI DÙNG]
 "$text"
@@ -338,16 +293,12 @@ $analysisResult
 [YÊU CẦU]
 Dựa vào hình ảnh và câu hỏi để tư vấn.
 """;
-
       } catch (e) {
         finalMessageToSend = "$text\n(Lỗi phân tích ảnh: $e)";
       }
-
-      // Reset task
       _pendingAnalysisTask = null;
     }
 
-    // Gửi Chatbot
     final botResponse = await _apiService.sendMessage(finalMessageToSend, _currentId);
 
     if (mounted) {
@@ -365,9 +316,6 @@ Dựa vào hình ảnh và câu hỏi để tư vấn.
       _scrollToBottom();
     }
   }
-
-  // ==================== UI & CÁC HÀM KHÁC (GIỮ NGUYÊN) ====================
-  // (Phần này chỉ là UI và setup cơ bản, không ảnh hưởng logic chính)
 
   Future<void> _switchConversation(String newId, {bool saveToHistory = true, bool closeMenu = true}) {
     if (closeMenu && Navigator.canPop(context)) {}
@@ -401,11 +349,20 @@ Dựa vào hình ảnh và câu hỏi để tư vấn.
     try {
       _cameras = await availableCameras();
       if (_cameras.isEmpty) return;
-      final backCamera = _cameras.firstWhere((camera) => camera.lensDirection == CameraLensDirection.back, orElse: () => _cameras.first);
-      _cameraController = CameraController(backCamera, ResolutionPreset.medium, enableAudio: false);
+      final backCamera = _cameras.firstWhere(
+            (camera) => camera.lensDirection == CameraLensDirection.back,
+        orElse: () => _cameras.first,
+      );
+      _cameraController = CameraController(
+        backCamera,
+        ResolutionPreset.medium,
+        enableAudio: false,
+      );
       await _cameraController!.initialize();
       if (mounted) setState(() {});
-    } catch (e) { debugPrint("Lỗi camera: $e"); }
+    } catch (e) {
+      debugPrint("Camera error: $e");
+    }
   }
 
   Future<void> _toggleCameraState() async {
@@ -508,13 +465,13 @@ Dựa vào hình ảnh và câu hỏi để tư vấn.
     return Drawer(child: Column(children: [
       Container(width: double.infinity,
         decoration: BoxDecoration(
-          color: AppColors.primary
+            color: AppColors.primary
         ),
         padding: const EdgeInsets.all(24),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text("Lịch sử", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
           Text("${_historyList.length} cuộc hội thoại", style: TextStyle(color: Colors.white)),
-          ],
+        ],
         ),
       ),
 

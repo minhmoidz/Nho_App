@@ -127,7 +127,7 @@ class _MemoryPageState extends State<MemoryPage> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _memories.isEmpty
-          ? const Center(child: Text("Chưa có ký ức nào",))
+          ? const Center(child: Text("Chưa có ký ức nào", style: TextStyle(fontSize: 24),))
           : RefreshIndicator(
         onRefresh: _fetchMemories,
         child: ListView.builder(
