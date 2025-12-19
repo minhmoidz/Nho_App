@@ -5,24 +5,17 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../login/auth_service.dart';
 import '../models/chat_model.dart';
 
-
 class ApiService {
-  final AuthService _authService = AuthService(); // Khởi tạo AuthService
+  final AuthService _authService = AuthService();
+  final String baseUrl = dotenv.env['API_BASE_URL']!;
 
-   final String baseUrl = dotenv.env['API_BASE_URL']!;
-
-  // --- HÀM TẠO HEADERS ĐỘNG ---
-  // Headers giờ phải là Future vì cần đợi đọc Token từ SecureStorage
   Future<Map<String, String>> _getHeaders() async {
     final token = await _authService.getToken();
-
-    // Header cơ bản
     Map<String, String> headers = {
       "Content-Type": "application/json",
       "Accept": "application/json",
     };
 
-    // Nếu có token thì kẹp vào Authorization
     if (token != null) {
       headers["Authorization"] = "Bearer $token";
     }
@@ -30,127 +23,91 @@ class ApiService {
     return headers;
   }
 
-  // --- CÁC HÀM GỌI API ---
-
-  // 1. Lấy danh sách lịch sử
   Future<List<Conversation>> getHistory() async {
     final uri = Uri.parse('$baseUrl/api/v1/chat/history');
     try {
       final headers = await _getHeaders();
       final response = await http.get(uri, headers: headers);
 
-      print("Status: ${response.statusCode}");
-      // In ra body để biết chính xác cấu trúc JSON
-      print("API Body: ${utf8.decode(response.bodyBytes)}");
-
       if (response.statusCode == 200) {
         final dynamic decodedData = jsonDecode(utf8.decode(response.bodyBytes));
-
         List<dynamic> listData = [];
 
-        // TRƯỜNG HỢP 1: API trả về List trực tiếp []
         if (decodedData is List) {
           listData = decodedData;
-        }
-        // TRƯỜNG HỢP 2: API trả về Map {} chứa List
-        else if (decodedData is Map<String, dynamic>) {
-          // Bạn cần thử các key phổ biến hoặc xem log "API Body" ở trên để biết key đúng
-          if (decodedData.containsKey('data')) {
-            listData = decodedData['data'];
-          } else if (decodedData.containsKey('items')) {
-            listData = decodedData['items'];
-          } else if (decodedData.containsKey('conversations')) {
-            listData = decodedData['conversations'];
-          } else if (decodedData.containsKey('history')) {
-            listData = decodedData['history'];
-          } else {
-            print("⚠️ Không tìm thấy key chứa danh sách trong JSON Object");
-          }
+        } else if (decodedData is Map<String, dynamic>) {
+          listData = decodedData['data'] ??
+              decodedData['items'] ??
+              decodedData['conversations'] ??
+              decodedData['history'] ??
+              [];
         }
 
         return listData.map((e) => Conversation.fromJson(e)).toList();
       }
     } catch (e) {
-      print("❌ Lỗi getHistory: $e");
+      print("Error getHistory: $e");
     }
     return [];
   }
 
-  // 2. Tạo hội thoại mới
-  // Trong lib/services/api_service.dart
-
   Future<String?> createNewConversation() async {
     final uri = Uri.parse('$baseUrl/api/v1/chat/history/new');
-    print("CREATE NEW URL: $uri");
 
     try {
       final headers = await _getHeaders();
-      // SỬA 1: Gửi kèm body rỗng {} để tránh lỗi 422/400 ở một số server
       final response = await http.post(uri, headers: headers, body: jsonEncode({}));
-
-      print("Create Status: ${response.statusCode}");
-      print("Create Body: ${utf8.decode(response.bodyBytes)}"); // Xem log để biết lỗi gì
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final dynamic decoded = jsonDecode(utf8.decode(response.bodyBytes));
 
-        // SỬA 2: Tìm ID trong mọi ngóc ngách của JSON trả về
         if (decoded is Map<String, dynamic>) {
-          // Trường hợp 1: Trả về trực tiếp {"conversation_id": "123"}
-          if (decoded.containsKey('conversation_id')) return decoded['conversation_id'].toString();
-          if (decoded.containsKey('id')) return decoded['id'].toString();
+          if (decoded.containsKey('conversation_id')) {
+            return decoded['conversation_id'].toString();
+          }
+          if (decoded.containsKey('id')) {
+            return decoded['id'].toString();
+          }
 
-          // Trường hợp 2: Trả về lồng trong data {"data": {"id": "123"}}
           if (decoded.containsKey('data')) {
             final innerData = decoded['data'];
-
             if (innerData is Map) {
-              if (innerData.containsKey('conversation_id')) return innerData['conversation_id'].toString();
-              if (innerData.containsKey('id')) return innerData['id'].toString();
+              return innerData['conversation_id']?.toString() ??
+                  innerData['id']?.toString();
             }
-            // Trường hợp 3: data chính là ID {"data": "123"}
-            if (innerData is String || innerData is int) return innerData.toString();
+            if (innerData is String || innerData is int) {
+              return innerData.toString();
+            }
           }
         }
       }
     } catch (e) {
-      print("❌ Lỗi createNewConversation: $e");
+      print("Error createNewConversation: $e");
     }
     return null;
   }
 
-  // 3. Lấy chi tiết
   Future<List<ChatMessage>> getConversationDetail(String conversationId) async {
     final uri = Uri.parse('$baseUrl/api/v1/chat/history/$conversationId');
-    print("GET DETAIL URL: $uri"); // Debug URL
 
     try {
       final headers = await _getHeaders();
       final response = await http.get(uri, headers: headers);
 
-      print("Detail Status: ${response.statusCode}");
-      print("Detail Body: ${utf8.decode(response.bodyBytes)}"); // QUAN TRỌNG: Xem server trả về gì
-
       if (response.statusCode == 200) {
         final dynamic decoded = jsonDecode(utf8.decode(response.bodyBytes));
-
         List<dynamic> rawList = [];
 
-        // Logic "thông minh" để tìm danh sách tin nhắn bất kể cấu trúc
         if (decoded is List) {
           rawList = decoded;
         } else if (decoded is Map<String, dynamic>) {
-          // Trường hợp 1: {"messages": [...]}
           if (decoded.containsKey('messages')) {
             rawList = decoded['messages'];
-          }
-          // Trường hợp 2: {"data": [...]} (List tin nhắn nằm trong data)
-          else if (decoded.containsKey('data')) {
+          } else if (decoded.containsKey('data')) {
             final data = decoded['data'];
             if (data is List) {
               rawList = data;
             } else if (data is Map && data.containsKey('messages')) {
-              // Trường hợp 3: {"data": {"messages": [...]}}
               rawList = data['messages'];
             }
           }
@@ -159,12 +116,11 @@ class ApiService {
         return rawList.map((e) => ChatMessage.fromJson(e)).toList();
       }
     } catch (e) {
-      print("❌ Lỗi getConversationDetail: $e");
+      print("Error getConversationDetail: $e");
     }
     return [];
   }
 
-  // 4. Xóa hội thoại
   Future<bool> deleteConversation(String conversationId) async {
     final uri = Uri.parse('$baseUrl/api/v1/chat/history/$conversationId');
     try {
@@ -172,31 +128,27 @@ class ApiService {
       final response = await http.delete(uri, headers: headers);
       return response.statusCode == 200;
     } catch (e) {
-      print("Lỗi deleteConversation: $e");
+      print("Error deleteConversation: $e");
       return false;
     }
   }
 
-  // 5. Gửi tin nhắn
   Future<String?> sendMessage(String message, String conversationId) async {
-    final uri = Uri.parse('$baseUrl/api/v1/chat').replace(queryParameters: {
-      'conversation_id': conversationId,
-    });
+    final uri = Uri.parse('$baseUrl/api/v1/chat').replace(
+      queryParameters: {'conversation_id': conversationId},
+    );
 
     try {
       final headers = await _getHeaders();
       final body = jsonEncode({"message": message});
-
       final response = await http.post(uri, headers: headers, body: body);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(utf8.decode(response.bodyBytes));
         return data['response'] ?? data['message'] ?? data['text'];
-      } else {
-        print("Chat Error: ${response.statusCode} - ${response.body}");
       }
     } catch (e) {
-      print("Lỗi sendMessage: $e");
+      print("Error sendMessage: $e");
     }
     return null;
   }
