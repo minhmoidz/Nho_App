@@ -38,12 +38,10 @@ class ProfileApiService {
 
    final response = await http.get(uri, headers: headers);
 
-   // 👉 CHƯA CÓ PROFILE → trả về null
    if (response.statusCode == 404) {
     return null;
    }
 
-   // 👉 CÁC LỖI THẬT
    if (response.statusCode != 200) {
     throw Exception(
      'Lỗi tải hồ sơ: ${response.statusCode}',

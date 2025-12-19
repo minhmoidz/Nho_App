@@ -89,19 +89,15 @@ class _UserProfilePageState extends State<UserProfilePage> {
             );
           }
 
-          // 👉 CHƯA CÓ PROFILE
           if (snapshot.data == null) {
             return _buildEmptyProfile();
           }
 
-          // 👉 CÓ PROFILE
           return _buildProfileContent(snapshot.data!);
         },
       ),
     );
   }
-
-  // ================= UI =================
 
   Widget _buildEmptyProfile() {
     return Center(

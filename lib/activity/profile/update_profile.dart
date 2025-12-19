@@ -178,8 +178,6 @@ class _UpdateProfileScreen extends State<UpdateProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 40),
-
-              // Form Card
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -195,15 +193,12 @@ class _UpdateProfileScreen extends State<UpdateProfileScreen> {
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    // Full Name
                     _buildTextField(
                       controller: _fullNameController,
                       label: 'Tên đầy đủ',
                       icon: Icons.person_outline,
                     ),
                     const SizedBox(height: 16),
-
-                    // Birth Date
                     _buildTextField(
                       controller: _birthDateController,
                       label: 'Ngày sinh',
@@ -211,8 +206,6 @@ class _UpdateProfileScreen extends State<UpdateProfileScreen> {
                       onTap: _selectBirthDate,
                     ),
                     const SizedBox(height: 16),
-
-                    // Age (read-only)
                     _buildTextField(
                       controller: _ageController,
                       label: 'Tuổi',
@@ -221,8 +214,6 @@ class _UpdateProfileScreen extends State<UpdateProfileScreen> {
                       enabled: false,
                     ),
                     const SizedBox(height: 16),
-
-                    // Phone
                     _buildTextField(
                       controller: _phoneController,
                       label: 'Số điện thoại',
@@ -230,16 +221,12 @@ class _UpdateProfileScreen extends State<UpdateProfileScreen> {
                       keyboardType: TextInputType.phone,
                     ),
                     const SizedBox(height: 16),
-
-                    // Address
                     _buildTextField(
                       controller: _addressController,
                       label: 'Địa chỉ',
                       icon: Icons.home_outlined,
                     ),
                     const SizedBox(height: 30),
-
-                    // Update Button
                     SizedBox(
                       width: double.infinity,
                       height: 56,
