@@ -20,6 +20,7 @@ dependencies:
   velocity_x: ^4.2.1
   fluttericon: ^2.0.0
   flutter_spinkit: ^5.2.1
+  flutter_markdown: ^0.7.1
 
   # --- Chat ---
   dash_chat_2: ^0.0.21

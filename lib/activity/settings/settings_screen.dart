@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nhoapp/constants/app_colors.dart';
 import 'package:nhoapp/constants/font_size_provider.dart';
+import 'package:nhoapp/widgets/app_bar.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,6 +9,11 @@ import '../chatbot/screens/voice_chat_screen.dart';
 import '../login/auth_service.dart';
 import '../profile/update_profile.dart';
 import '../profile/profile_api_service.dart';
+import 'dialog/about_dialog.dart';
+import 'dialog/terms_dialog.dart';
+import 'dialog/privacy_dialog.dart';
+import 'dialog/faq_dialog.dart';
+import 'dialog/contact_dialog.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -272,23 +278,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black87),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Cài đặt',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
+      appBar: NhoAppBar(title: "Cài đặt"),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -765,522 +755,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showAboutDialog() {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Về Nhớ App', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                '🌿 Nhớ App - Người Bạn Đồng Hành Sức Khỏe',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Nhớ App là ứng dụng chăm sóc sức khỏe toàn diện dành riêng cho người cao tuổi, được phát triển với sứ mệnh mang đến cuộc sống khỏe mạnh, hạnh phúc và an tâm cho thế hệ bạc đầu.',
-                style: TextStyle(color: Colors.grey[700], height: 1.5),
-              ),
-              const SizedBox(height: 16),
-              const Text(' Tính năng nổi bật:', style: TextStyle(fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
-              _buildFeatureItem(' Trợ lý AI thông minh hỗ trợ 24/7'),
-              _buildFeatureItem(' Nhắc nhở uống thuốc và khám bệnh định kỳ'),
-              _buildFeatureItem(' Nhật ký sức khỏe và tâm trạng hàng ngày'),
-              _buildFeatureItem(' Trò chơi rèn luyện trí nhớ và tư duy'),
-              _buildFeatureItem(' Kho kiến thức sức khỏe đa dạng'),
-              _buildFeatureItem(' Luyện tập thể dục với AI nhận diện tư thế'),
-              const SizedBox(height: 16),
-              Text(
-                'Phiên bản: $_appVersion',
-                style: TextStyle(color: Colors.grey[600], fontSize: 13),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '© 2024-2025 Nhớ App Team',
-                style: TextStyle(color: Colors.grey[600], fontSize: 13),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Made with in Vietnam',
-                style: TextStyle(color: Colors.grey[600], fontSize: 13, fontStyle: FontStyle.italic),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Đóng', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
-          ),
-        ],
-      ),
+      builder: (ctx) => const AboutDialogWidget(),
     );
   }
 
-  Widget _buildFeatureItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 8, bottom: 6),
-      child: Text(
-        text,
-        style: TextStyle(color: Colors.grey[700], fontSize: 14, height: 1.4),
-      ),
-    );
-  }
 
   void _showTermsDialog() {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Điều khoản sử dụng', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Cập nhật lần cuối: 19/12/2025',
-                style: TextStyle(color: Colors.grey[600], fontSize: 12, fontStyle: FontStyle.italic),
-              ),
-              const SizedBox(height: 16),
-              _buildTermSection(
-                '1. Chấp nhận điều khoản',
-                'Bằng việc tải xuống, cài đặt và sử dụng Nhớ App, bạn đồng ý tuân thủ các điều khoản và điều kiện được nêu trong tài liệu này. Nếu không đồng ý, vui lòng không sử dụng ứng dụng.',
-              ),
-              _buildTermSection(
-                '2. Mục đích sử dụng',
-                'Nhớ App được thiết kế để hỗ trợ người cao tuổi trong việc:\n• Quản lý sức khỏe và nhắc nhở uống thuốc\n• Ghi nhật ký tâm trạng và hoạt động hàng ngày\n• Trò chuyện với trợ lý AI về các vấn đề sức khỏe cơ bản\n• Luyện tập trí nhớ và thể chất\n\nỨng dụng KHÔNG THAY THẾ tư vấn y tế chuyên nghiệp, chẩn đoán hoặc điều trị bệnh.',
-              ),
-              _buildTermSection(
-                '3. Trách nhiệm người dùng',
-                '• Cung cấp thông tin chính xác khi đăng ký\n• Bảo mật tài khoản và không chia sẻ mật khẩu\n• Sử dụng ứng dụng đúng mục đích và hợp pháp\n• Không lạm dụng các tính năng AI hoặc tải lên nội dung vi phạm pháp luật\n• Tham khảo ý kiến bác sĩ trước khi đưa ra quyết định về sức khỏe',
-              ),
-              _buildTermSection(
-                '4. Quyền sở hữu trí tuệ',
-                'Tất cả nội dung, mã nguồn, thiết kế giao diện, logo và tài liệu trong Nhớ App thuộc quyền sở hữu của Nhớ App Team. Người dùng không được sao chép, phân phối hoặc sử dụng cho mục đích thương mại mà không có sự cho phép bằng văn bản.',
-              ),
-              _buildTermSection(
-                '5. Giới hạn trách nhiệm',
-                '• Nhớ App không chịu trách nhiệm về các quyết định y tế dựa trên thông tin từ ứng dụng\n• Không đảm bảo ứng dụng hoạt động không bị gián đoạn hoặc lỗi\n• Không chịu trách nhiệm về thiệt hại gián tiếp, ngẫu nhiên hoặc hệ quả phát sinh từ việc sử dụng ứng dụng',
-              ),
-              _buildTermSection(
-                '6. Thay đổi điều khoản',
-                'Chúng tôi có quyền cập nhật điều khoản sử dụng bất cứ lúc nào. Người dùng sẽ được thông báo qua ứng dụng về các thay đổi quan trọng. Việc tiếp tục sử dụng sau khi có thay đổi đồng nghĩa với việc chấp nhận điều khoản mới.',
-              ),
-              _buildTermSection(
-                '7. Chấm dứt dịch vụ',
-                'Chúng tôi có quyền tạm ngưng hoặc chấm dứt tài khoản của người dùng nếu phát hiện hành vi vi phạm điều khoản sử dụng hoặc pháp luật hiện hành.',
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Đóng', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
-          ),
-        ],
-      ),
+      builder: (ctx) => const TermsDialogWidget(),
     );
   }
 
-  Widget _buildTermSection(String title, String content) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            content,
-            style: TextStyle(color: Colors.grey[700], height: 1.5, fontSize: 14),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _showPrivacyDialog() {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Chính sách bảo mật', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Có hiệu lực từ: 19/12/2025',
-                style: TextStyle(color: Colors.grey[600], fontSize: 12, fontStyle: FontStyle.italic),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Nhớ App cam kết bảo vệ quyền riêng tư và thông tin cá nhân của người dùng. Chính sách này giải thích cách chúng tôi thu thập, sử dụng và bảo vệ dữ liệu của bạn.',
-                style: TextStyle(color: Colors.grey[700], height: 1.5),
-              ),
-              const SizedBox(height: 16),
-              _buildTermSection(
-                '1. Thông tin chúng tôi thu thập',
-                'Thông tin cá nhân:\n• Họ tên, ngày sinh, giới tính\n• Số điện thoại, email, địa chỉ\n• Ảnh đại diện (tùy chọn)\n\nThông tin sức khỏe:\n• Nhật ký sức khỏe, tâm trạng\n• Lịch uống thuốc và khám bệnh\n• Lịch sử chat với trợ lý AI\n\nThông tin kỹ thuật:\n• Loại thiết bị, phiên bản hệ điều hành\n• Địa chỉ IP, nhật ký truy cập\n• Thông tin vị trí (khi bật tính năng)',
-              ),
-              _buildTermSection(
-                '2. Mục đích sử dụng thông tin',
-                '• Cung cấp và cải thiện các tính năng của ứng dụng\n• Cá nhân hóa trải nghiệm người dùng\n• Gửi nhắc nhở và thông báo quan trọng\n• Phân tích và thống kê sử dụng ứng dụng\n• Hỗ trợ khách hàng và xử lý yêu cầu\n• Nghiên cứu và phát triển tính năng mới',
-              ),
-              _buildTermSection(
-                '3. Bảo vệ thông tin',
-                'Chúng tôi áp dụng các biện pháp bảo mật tiên tiến:\n\n Mã hóa dữ liệu:\n• Mã hóa end-to-end cho thông tin nhạy cảm\n• SSL/TLS cho mọi kết nối mạng\n\n🛡️ Kiểm soát truy cập:\n• Xác thực JWT Token\n• Phân quyền người dùng chặt chẽ\n\n💾 Lưu trữ an toàn:\n• Máy chủ được bảo vệ và sao lưu định kỳ\n• Tuân thủ các tiêu chuẩn bảo mật quốc tế',
-              ),
-              _buildTermSection(
-                '4. Chia sẻ thông tin',
-                'Chúng tôi KHÔNG bán hoặc cho thuê thông tin cá nhân của bạn.\n\nThông tin có thể được chia sẻ trong các trường hợp:\n• Khi có sự đồng ý rõ ràng từ người dùng\n• Với các nhà cung cấp dịch vụ (Google AI, server hosting) để vận hành ứng dụng\n• Khi pháp luật yêu cầu hoặc để bảo vệ quyền lợi hợp pháp',
-              ),
-              _buildTermSection(
-                '5. Quyền của người dùng',
-                'Bạn có quyền:\n• Truy cập và xem thông tin cá nhân\n• Yêu cầu chỉnh sửa hoặc cập nhật thông tin\n• Xóa tài khoản và dữ liệu liên quan\n• Rút lại sự đồng ý xử lý dữ liệu\n• Khiếu nại về việc xử lý thông tin cá nhân\n\nĐể thực hiện các quyền này, vui lòng liên hệ: privacy@nhoapp.com',
-              ),
-              _buildTermSection(
-                '6. Cookie và công nghệ theo dõi',
-                'Ứng dụng sử dụng cookie và công nghệ tương tự để:\n• Ghi nhớ phiên đăng nhập\n• Lưu trữ cài đặt người dùng\n• Phân tích hành vi sử dụng\n\nBạn có thể quản lý cookie trong cài đặt ứng dụng.',
-              ),
-              _buildTermSection(
-                '7. Thời gian lưu trữ dữ liệu',
-                '• Dữ liệu tài khoản: Cho đến khi bạn xóa tài khoản\n• Nhật ký hoạt động: 12 tháng\n• Lịch sử chat: Cho đến khi bạn xóa\n• Dữ liệu sao lưu: 30 ngày',
-              ),
-              _buildTermSection(
-                '8. Thay đổi chính sách',
-                'Chúng tôi có thể cập nhật chính sách bảo mật để phản ánh thay đổi trong thực tiễn hoặc yêu cầu pháp lý. Bạn sẽ được thông báo về các thay đổi quan trọng qua email hoặc thông báo trong ứng dụng.',
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.3)),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.email, color: AppColors.primary, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Câu hỏi về bảo mật?',
-                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppColors.primary),
-                          ),
-                          const Text(
-                            'Liên hệ: privacy@nhoapp.com',
-                            style: TextStyle(fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Đóng', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
-          ),
-        ],
-      ),
+      builder: (ctx) => const PrivacyDialogWidget(),
     );
   }
 
   void _showFAQDialog() {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Câu hỏi thường gặp', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildFAQCategory(' Bắt đầu sử dụng'),
-              _buildFAQItem(
-                'Làm thế nào để tạo tài khoản?',
-                'Mở ứng dụng → Chọn "Đăng ký" → Điền thông tin (họ tên, số điện thoại, mật khẩu) → Xác nhận OTP → Hoàn tất!',
-              ),
-              _buildFAQItem(
-                'Tôi quên mật khẩu thì làm sao?',
-                'Tại màn hình đăng nhập → Chọn "Quên mật khẩu" → Nhập số điện thoại đã đăng ký → Nhận mã OTP → Tạo mật khẩu mới.',
-              ),
-              const SizedBox(height: 16),
-              _buildFAQCategory(' Trợ lý AI'),
-              _buildFAQItem(
-                'Làm thế nào để chat với trợ lý AI?',
-                'Ở trang chủ → Nhấn vào biểu tượng "Trợ lý chat" → Bắt đầu trò chuyện bằng giọng nói hoặc gõ văn bản. Trợ lý sẽ trả lời các câu hỏi về sức khỏe, thuốc men và đời sống.',
-              ),
-              _buildFAQItem(
-                'AI có thể làm gì?',
-                '• Tư vấn sức khỏe cơ bản\n• Giải đáp thắc mắc về thuốc\n• Hỗ trợ tâm lý, trò chuyện\n• Gợi ý bài tập thể dục phù hợp\n• Nhắc nhở chăm sóc sức khỏe\n\n⚠️ Lưu ý: AI không thay thế bác sĩ!',
-              ),
-              const SizedBox(height: 16),
-              _buildFAQCategory(' Nhắc nhở uống thuốc'),
-              _buildFAQItem(
-                'Cách đặt nhắc nhở uống thuốc?',
-                'Trang chủ → "Nhắc nhở" → Nút "+" → Nhập thông tin thuốc (tên, liều lượng, giờ uống) → Chọn lịch lặp lại → Lưu. Ứng dụng sẽ thông báo đúng giờ!',
-              ),
-              _buildFAQItem(
-                'Tôi không nghe thấy thông báo?',
-                'Kiểm tra: Cài đặt → Thông báo (bật) → Âm thanh (bật) → Cài đặt điện thoại → Cho phép thông báo từ Nhớ App.',
-              ),
-              const SizedBox(height: 16),
-              _buildFAQCategory(' Nhật ký sức khỏe'),
-              _buildFAQItem(
-                'Nhật ký để làm gì?',
-                'Ghi lại tâm trạng, triệu chứng, hoạt động hàng ngày để:\n• Theo dõi sức khỏe qua thời gian\n• Chia sẻ với bác sĩ khi khám\n• AI phân tích và đưa ra lời khuyên',
-              ),
-              _buildFAQItem(
-                'Cách ghi nhật ký?',
-                'Trang chủ → "Nhật ký" → Nút "+" → Chọn loại (sức khỏe/tâm trạng/ăn uống) → Viết nội dung → Thêm ảnh (tùy chọn) → Lưu.',
-              ),
-              const SizedBox(height: 16),
-              _buildFAQCategory(' Trò chơi trí nhớ'),
-              _buildFAQItem(
-                'Trò chơi có tác dụng gì?',
-                'Giúp rèn luyện:\n• Trí nhớ ngắn hạn và dài hạn\n• Khả năng tập trung\n• Tư duy logic\n• Phản xạ\n\nChơi 15-20 phút mỗi ngày để não bộ luôn khỏe mạnh!',
-              ),
-              const SizedBox(height: 16),
-              _buildFAQCategory(' Luyện tập thể dục'),
-              _buildFAQItem(
-                'AI nhận diện tư thế hoạt động thế nào?',
-                'Bật camera → Chọn bài tập → AI sẽ theo dõi chuyển động qua camera và cho điểm tư thế. Đảm bảo đủ ánh sáng và đứng cách camera 1.5-2m.',
-              ),
-              const SizedBox(height: 16),
-              _buildFAQCategory(' Bảo mật & Quyền riêng tư'),
-              _buildFAQItem(
-                'Dữ liệu của tôi có an toàn không?',
-                'Có! Chúng tôi:\n• Mã hóa tất cả dữ liệu nhạy cảm\n• Không chia sẻ thông tin với bên thứ ba\n• Lưu trữ trên máy chủ bảo mật\n• Tuân thủ luật bảo vệ dữ liệu cá nhân',
-              ),
-              _buildFAQItem(
-                'Cách xóa tài khoản?',
-                'Cài đặt → Tài khoản → Xóa tài khoản → Xác nhận. Tất cả dữ liệu sẽ bị xóa vĩnh viễn và không thể khôi phục.',
-              ),
-              const SizedBox(height: 16),
-              _buildFAQCategory(' Chi phí'),
-              _buildFAQItem(
-                'Ứng dụng có miễn phí không?',
-                'Có! Nhớ App hoàn toàn MIỄN PHÍ, không có phí ẩn. Tất cả tính năng đều sẵn sàng cho người dùng.',
-              ),
-              const SizedBox(height: 16),
-              _buildFAQCategory(' Hỗ trợ kỹ thuật'),
-              _buildFAQItem(
-                'Ứng dụng bị lỗi, tôi phải làm gì?',
-                '1. Tắt và mở lại ứng dụng\n2. Kiểm tra kết nối Internet\n3. Cập nhật phiên bản mới nhất\n4. Xóa bộ nhớ cache: Cài đặt điện thoại → Ứng dụng → Nhớ App → Xóa cache\n5. Nếu vẫn lỗi: Liên hệ support@nhoapp.com',
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.accent.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.3)),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.contact_support, color: AppColors.primary, size: 24),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Text(
-                        'Không tìm thấy câu trả lời?\nLiên hệ: support@nhoapp.com\nHotline: 1900-1234',
-                        style: TextStyle(fontSize: 12, height: 1.5),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Đóng', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
-          ),
-        ],
-      ),
+      builder: (ctx) => const FAQDialogWidget(),
     );
   }
 
-  Widget _buildFAQCategory(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.bold,
-          color: AppColors.primary,
-        ),
-      ),
-    );
-  }
 
-  Widget _buildFAQItem(String question, String answer) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12, left: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Q: ', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary)),
-              Expanded(
-                child: Text(
-                  question,
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('A: ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600])),
-              Expanded(
-                child: Text(
-                  answer,
-                  style: TextStyle(color: Colors.grey[700], height: 1.5, fontSize: 14),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 
   void _showContactDialog() {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Liên hệ hỗ trợ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Chúng tôi luôn sẵn sàng hỗ trợ bạn!',
-                style: TextStyle(color: Colors.grey[600], fontSize: 14),
-              ),
-              const SizedBox(height: 20),
-              _buildContactItem(Icons.phone_in_talk, 'Hotline (Miễn phí)', '0965816163', '24/7 - Tất cả các ngày'),
-              const Divider(height: 24),
-              _buildContactItem(Icons.email, 'Email hỗ trợ', 'doanngocchungk5@gmail.com', 'Phản hồi trong 24h'),
-              const Divider(height: 24),
-              _buildContactItem(Icons.bug_report, 'Báo lỗi', 'doanngocchungk5@gmail.com', 'Ưu tiên xử lý nhanh'),
-              const Divider(height: 24),
-              _buildContactItem(Icons.privacy_tip, 'Bảo mật & Quyền riêng tư', 'doanngocchungk5@gmail.com', 'Liên hệ về dữ liệu cá nhân'),
-              const Divider(height: 24),
-              _buildContactItem(Icons.language, 'Website', 'www.nhoapp.com', 'Tin tức và tài liệu'),
-              const Divider(height: 24),
-              _buildContactItem(Icons.facebook, 'Facebook', 'fb.com/NhoApp', 'Cộng đồng người dùng'),
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.3)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.location_on, color: AppColors.primary, size: 20),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Văn phòng',
-                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'RIPT - PTIT\n'
-                      '122 Hoàng Quốc Việt, Hà Nội\n'
-                      'Việt Nam',
-                      style: TextStyle(color: Colors.grey[700], height: 1.5, fontSize: 13),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Giờ làm việc: 8:00 - 17:30 (T2-T6)',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 12, fontStyle: FontStyle.italic),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Đóng', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
-          ),
-        ],
-      ),
+      builder: (ctx) => const ContactDialogWidget(),
     );
   }
 
-  Widget _buildContactItem(IconData icon, String label, String value, [String? subtitle]) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: AppColors.accent.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: AppColors.primary, size: 20),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(fontSize: 12, color: Colors.grey[600], fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-              ),
-              if (subtitle != null) ...[
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: TextStyle(fontSize: 11, color: Colors.grey[500]),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ],
-    );
-  }
 }

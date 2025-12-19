@@ -137,7 +137,7 @@ class _HomePageState extends State<HomePage> {
               children: [
                 const SizedBox(height: 16),
                 Text(
-                  _getGreeting(),
+                  'Chúc ông/bà\nmột ngày tốt lành! ',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w800,
@@ -153,15 +153,6 @@ class _HomePageState extends State<HomePage> {
                     fontSize: 16,
                     color: Colors.grey.shade700,
                     fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Chúc ông/bà một ngày tốt lành! ',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],

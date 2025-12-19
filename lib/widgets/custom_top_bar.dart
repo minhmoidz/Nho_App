@@ -46,7 +46,7 @@ class _CustomTopBarState extends State<CustomTopBar> {
 
   void _updateTime() {
     setState(() {
-      _currentTime = DateFormat('HH:mm:ss').format(DateTime.now());
+      _currentTime = DateFormat('HH:mm').format(DateTime.now());
     });
   }
 
