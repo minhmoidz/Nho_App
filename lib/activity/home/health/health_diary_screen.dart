@@ -424,96 +424,176 @@ class _HealthScreenState extends State<HealthScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.85,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-        ),
-        padding: EdgeInsets.fromLTRB(24, 20, 24, MediaQuery.of(context).viewInsets.bottom + 20),
-        child: Column(
-          children: [
-            Container(width: 40, height: 5, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10))),
-            const SizedBox(height: 20),
-            Text('Ghi Nhận Chỉ Số', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.primary)),
-            const SizedBox(height: 30),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, modalSetState) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.85,
+              padding: EdgeInsets.fromLTRB(
+                24,
+                20,
+                24,
+                MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+              ),
+              child: Column(
+                children: [
+                  // ===== Drag handle =====
+                  Container(
+                    width: 40,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
 
-            // Chọn loại (Dạng Grid nút bấm to dễ chọn)
-            SizedBox(
-              height: 100, // Chiều cao cố định cho vùng chọn
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _logTypes.length,
-                itemBuilder: (ctx, i) {
-                  final type = _logTypes[i];
-                  final isSelected = _selectedInputType == type;
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedInputType = type), // Cập nhật state modal (cần StatefulBuilder nếu tách ra)
-                    child: Container( // Thay đổi UI ngay lập tức
-                      width: 80,
-                      margin: const EdgeInsets.only(right: 10),
-                      decoration: BoxDecoration(
-                        color: isSelected ? AppColors.primary : Colors.grey[100],
-                        borderRadius: BorderRadius.circular(12),
-                        border: isSelected ? null : Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(_getIconForType(type), color: isSelected ? Colors.white : Colors.grey),
-                          const SizedBox(height: 5),
-                          Text(type, style: TextStyle(color: isSelected ? Colors.white : Colors.grey, fontSize: 12), textAlign: TextAlign.center),
-                        ],
+                  // ===== Title =====
+                  Text(
+                    'Ghi Nhận Chỉ Số',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+
+                  // ===== Chọn loại chỉ số =====
+                  SizedBox(
+                    height: 100,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _logTypes.length,
+                      itemBuilder: (ctx, i) {
+                        final type = _logTypes[i];
+                        final isSelected = _selectedInputType == type;
+
+                        return GestureDetector(
+                          onTap: () {
+                            modalSetState(() {
+                              _selectedInputType = type;
+                            });
+                          },
+                          child: Container(
+                            width: 90,
+                            margin: const EdgeInsets.only(right: 12),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : Colors.grey[100],
+                              borderRadius: BorderRadius.circular(14),
+                              border: isSelected
+                                  ? null
+                                  : Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  _getIconForType(type),
+                                  size: 28,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.grey,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  type,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // ===== Input giá trị =====
+                  TextField(
+                    controller: _valueController,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'Kết quả đo ($_selectedInputType)',
+                      hintText: 'VD: 120/80',
+                      filled: true,
+                      fillColor: Colors.grey[50],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 20),
+                  ),
+                  const SizedBox(height: 20),
 
-            // Input to rõ
-            TextField(
-              controller: _valueController,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-              decoration: InputDecoration(
-                hintText: 'VD: 120/80',
-                labelText: 'Kết quả đo ($_selectedInputType)',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                filled: true,
-                fillColor: Colors.grey[50],
+                  // ===== Ghi chú =====
+                  TextField(
+                    controller: _noteController,
+                    decoration: InputDecoration(
+                      hintText: 'Ghi chú (tuỳ chọn)',
+                      prefixIcon: const Icon(Icons.edit_note),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  // ===== Nút lưu =====
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      onPressed: _submitLog,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        'LƯU LẠI',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _noteController,
-              decoration: InputDecoration(
-                hintText: 'Ghi chú (đau đầu, vừa ăn xong...)',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                prefixIcon: const Icon(Icons.edit_note),
-              ),
-            ),
-            const Spacer(),
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                onPressed: _submitLog,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                ),
-                child: const Text('LƯU LẠI', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-              ),
-            )
-          ],
-        ),
-      ),
+            );
+          },
+        );
+      },
     ).then((_) {
-      // Reset state modal if needed when closed
+      // ===== RESET STATE KHI ĐÓNG MODAL =====
+      setState(() {
+        _selectedInputType = _logTypes.first; // Huyết áp
+        _valueController.clear();
+        _noteController.clear();
+      });
     });
   }
+
 
   // --- HELPERS ---
   TextStyle _headerStyle() => TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.blueGrey[900]);
