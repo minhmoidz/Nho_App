@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:nhoapp/widgets/app_bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../home/reminder/local_storage.dart';
 
@@ -16,11 +17,33 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   // List chứa thông báo hỗn hợp (Cả báo thức từ Local + Thông báo hệ thống)
   List<Map<String, dynamic>> _notifications = [];
+  
+  // Lưu trạng thái đã đọc của thông báo hệ thống
+  Set<int> _readSystemNotifications = {};
 
   @override
   void initState() {
     super.initState();
+    _loadReadStatus();
     _loadAllNotifications(); // Gọi hàm load dữ liệu
+  }
+
+  // Load trạng thái đã đọc từ SharedPreferences
+  Future<void> _loadReadStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final readIds = prefs.getStringList('read_notifications') ?? [];
+    setState(() {
+      _readSystemNotifications = readIds.map((id) => int.parse(id)).toSet();
+    });
+  }
+
+  // Lưu trạng thái đã đọc vào SharedPreferences
+  Future<void> _saveReadStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'read_notifications',
+      _readSystemNotifications.map((id) => id.toString()).toList(),
+    );
   }
 
   // --- HÀM 1: LOAD DỮ LIỆU TỪ NHIỀU NGUỒN ---
@@ -52,7 +75,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         'title': 'Chào mừng quay lại',
         'body': 'Chúc bác một ngày vui vẻ và mạnh khỏe!',
         'time': DateTime.now().subtract(const Duration(hours: 1)),
-        'isRead': false,
+        'isRead': _readSystemNotifications.contains(999),
         'type': 'system',
       },
     ];
@@ -73,15 +96,37 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   // --- CÁC HÀM XỬ LÝ GIAO DIỆN (GIỮ NGUYÊN HOẶC TÙY CHỈNH) ---
 
-  void _markAllAsRead() {
+  Future<void> _markAllAsRead() async {
     setState(() {
       for (var notif in _notifications) {
         notif['isRead'] = true;
+        // Lưu ID của thông báo hệ thống đã đọc
+        if (notif['type'] == 'system') {
+          _readSystemNotifications.add(notif['id']);
+        }
       }
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Đã xem tất cả")),
-    );
+    
+    // Lưu vào SharedPreferences
+    await _saveReadStatus();
+    
+    // Cập nhật trạng thái đã hoàn thành cho reminders
+    List<dynamic> reminders = await LocalStorage.getReminders();
+    for (var notif in _notifications) {
+      if (notif['type'] == 'reminder') {
+        final index = reminders.indexWhere((r) => r['id'] == notif['id']);
+        if (index != -1) {
+          reminders[index]['is_completed'] = true;
+        }
+      }
+    }
+    await LocalStorage.saveReminders(reminders);
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Đã xem tất cả")),
+      );
+    }
   }
 
   void _deleteNotification(int index) {
@@ -172,48 +217,75 @@ class _NotificationsPageState extends State<NotificationsPage> {
       elevation: isRead ? 0 : 2,
       color: isRead ? Colors.white : Colors.blue.shade50,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          backgroundColor: _getColorByType(item['type']).withOpacity(0.1),
-          child: Icon(_getIconByType(item['type']), color: _getColorByType(item['type'])),
-        ),
-        title: Text(
-          item['title'],
-          style: TextStyle(
-            fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
-            color: Colors.black87,
+      child: InkWell(
+        onTap: () async {
+          // Đánh dấu đã đọc khi tap vào thông báo
+          if (!isRead) {
+            setState(() {
+              item['isRead'] = true;
+              if (item['type'] == 'system') {
+                _readSystemNotifications.add(item['id']);
+              }
+            });
+            
+            // Lưu trạng thái
+            await _saveReadStatus();
+            
+            // Nếu là reminder, cập nhật vào LocalStorage
+            if (item['type'] == 'reminder') {
+              List<dynamic> reminders = await LocalStorage.getReminders();
+              final reminderIndex = reminders.indexWhere((r) => r['id'] == item['id']);
+              if (reminderIndex != -1) {
+                reminders[reminderIndex]['is_completed'] = true;
+                await LocalStorage.saveReminders(reminders);
+              }
+            }
+          }
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          leading: CircleAvatar(
+            backgroundColor: _getColorByType(item['type']).withOpacity(0.1),
+            child: Icon(_getIconByType(item['type']), color: _getColorByType(item['type'])),
           ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Text(item['body'], maxLines: 2, overflow: TextOverflow.ellipsis),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                if (isFuture)
-                  const Icon(Icons.schedule, size: 14, color: Colors.green)
-                else
-                  const Icon(Icons.history, size: 14, color: Colors.grey),
-                const SizedBox(width: 4),
-                Text(
-                  _formatTime(item['time']),
-                  style: TextStyle(
-                      fontSize: 12,
-                      color: isFuture ? Colors.green[700] : Colors.grey[500],
-                      fontWeight: isFuture ? FontWeight.bold : FontWeight.normal
-                  ),
-                ),
-              ],
+          title: Text(
+            item['title'],
+            style: TextStyle(
+              fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
+              color: Colors.black87,
             ),
-          ],
-        ),
-        // Nút xóa nhanh
-        trailing: IconButton(
-          icon: const Icon(Icons.close, size: 18, color: Colors.grey),
-          onPressed: () => _deleteNotification(index),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 4),
+              Text(item['body'], maxLines: 2, overflow: TextOverflow.ellipsis),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  if (isFuture)
+                    const Icon(Icons.schedule, size: 14, color: Colors.green)
+                  else
+                    const Icon(Icons.history, size: 14, color: Colors.grey),
+                  const SizedBox(width: 4),
+                  Text(
+                    _formatTime(item['time']),
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: isFuture ? Colors.green[700] : Colors.grey[500],
+                        fontWeight: isFuture ? FontWeight.bold : FontWeight.normal
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          // Nút xóa nhanh
+          trailing: IconButton(
+            icon: const Icon(Icons.close, size: 18, color: Colors.grey),
+            onPressed: () => _deleteNotification(index),
+          ),
         ),
       ),
     );

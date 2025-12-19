@@ -177,7 +177,7 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           '🎵 Tuyệt Vời!',
-          style: TextStyle(color: Color(0xFF81C784), fontSize: 24),
+          style: TextStyle(color: Color(0xFF6BAE82), fontSize: 24),
           textAlign: TextAlign.center,
         ),
         content: Column(
@@ -192,7 +192,7 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
             Container(
               padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
-                color: const Color(0xFF81C784).withOpacity(0.1),
+                color: const Color(0xFF6BAE82).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Text(
@@ -200,7 +200,7 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
                 style: const TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF81C784),
+                  color: Color(0xFF6BAE82),
                 ),
               ),
             ),
@@ -226,7 +226,7 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
               });
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF81C784),
+              backgroundColor: const Color(0xFF6BAE82),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -248,12 +248,12 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
         elevation: 0,
         backgroundColor: Colors.white,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF2E7D32)),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF6BAE82)),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Nghe Âm Đoán Vật',
-          style: TextStyle(color: Color(0xFF2E7D32), fontWeight: FontWeight.bold),
+          style: TextStyle(color: Color(0xFF6BAE82), fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
@@ -278,19 +278,19 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF81C784).withOpacity(0.1),
+                      color: const Color(0xFF6BAE82).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.star, color: Color(0xFF81C784), size: 18),
+                        const Icon(Icons.star, color: Color(0xFF6BAE82), size: 18),
                         const SizedBox(width: 5),
                         Text(
                           '$_score điểm',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF81C784),
+                            color: Color(0xFF6BAE82),
                           ),
                         ),
                       ],
@@ -302,7 +302,7 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
               LinearProgressIndicator(
                 value: (_currentIndex + 1) / _shuffledSounds.length,
                 backgroundColor: Colors.grey[200],
-                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF81C784)),
+                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF6BAE82)),
                 minHeight: 8,
                 borderRadius: BorderRadius.circular(4),
               ),
@@ -313,14 +313,14 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
                 padding: const EdgeInsets.all(30),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF81C784), Color(0xFFA5D6A7)],
+                    colors: [Color(0xFF6BAE82), Color(0xFF8BC9A4)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF81C784).withOpacity(0.3),
+                      color: const Color(0xFF6BAE82).withOpacity(0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -355,7 +355,7 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFF81C784),
+                        foregroundColor: const Color(0xFF6BAE82),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 30,
                           vertical: 15,
@@ -411,7 +411,7 @@ class _SoundGuessGameState extends State<SoundGuessGame> {
                     }
 
                     Color getBorderColor() {
-                      if (!_showResult) return const Color(0xFF81C784);
+                      if (!_showResult) return const Color(0xFF6BAE82);
                       if (isSelected && isCorrect) return Colors.green;
                       if (isSelected && !isCorrect) return Colors.red;
                       if (isCorrect) return Colors.green;

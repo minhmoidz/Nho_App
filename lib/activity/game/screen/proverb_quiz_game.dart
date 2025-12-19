@@ -130,7 +130,7 @@ class _ProverbQuizGameState extends State<ProverbQuizGame> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           '🎊 Hoàn Thành!',
-          style: TextStyle(color: Color(0xFF66BB6A), fontSize: 24),
+          style: TextStyle(color: Color(0xFF80A884), fontSize: 24),
           textAlign: TextAlign.center,
         ),
         content: Column(
@@ -145,7 +145,7 @@ class _ProverbQuizGameState extends State<ProverbQuizGame> {
             Container(
               padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
-                color: const Color(0xFF66BB6A).withOpacity(0.1),
+                color: const Color(0xFF80A884).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Text(
@@ -153,7 +153,7 @@ class _ProverbQuizGameState extends State<ProverbQuizGame> {
                 style: const TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF66BB6A),
+                  color: Color(0xFF80A884),
                 ),
               ),
             ),
@@ -179,12 +179,12 @@ class _ProverbQuizGameState extends State<ProverbQuizGame> {
               });
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF66BB6A),
+              backgroundColor: const Color(0xFF80A884),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: const Text('Chơi lại', style: TextStyle(fontSize: 16)),
+            child: const Text('Chơi lại', style: TextStyle(fontSize: 16, color: Colors.white)),
           ),
         ],
       ),
@@ -201,12 +201,12 @@ class _ProverbQuizGameState extends State<ProverbQuizGame> {
         elevation: 0,
         backgroundColor: Colors.white,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF2E7D32)),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF80A884)),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Đố Vui Ca Dao',
-          style: TextStyle(color: Color(0xFF2E7D32), fontWeight: FontWeight.bold),
+          style: TextStyle(color: Color(0xFF80A884), fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
@@ -231,19 +231,19 @@ class _ProverbQuizGameState extends State<ProverbQuizGame> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF66BB6A).withOpacity(0.1),
+                      color: const Color(0xFF80A884).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.star, color: Color(0xFF66BB6A), size: 18),
+                        const Icon(Icons.star, color: Color(0xFF80A884), size: 18),
                         const SizedBox(width: 5),
                         Text(
                           '$_score điểm',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF66BB6A),
+                            color: Color(0xFF80A884),
                           ),
                         ),
                       ],

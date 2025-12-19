@@ -99,7 +99,7 @@ class _ExercisePageState extends State<ExercisePage> {
             Navigator.pop(context);
           },
         ),
-        title: Text('Exercise Pose Detector'),
+        title: Text('Kiểm tra tư thế'),
       ),
       backgroundColor: Colors.black,
       body: Column(
@@ -120,7 +120,18 @@ class _ExercisePageState extends State<ExercisePage> {
             )
                 : SizedBox(
               height: MediaQuery.of(context).size.height - 300,
-              child: Image.asset('images/nhoapp.png'),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.camera_alt_outlined, size: 80, color: Colors.white54),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Chọn ảnh hoặc chụp ảnh \nđể kiểm tra tư thế',
+                    style: TextStyle(color: Colors.white54, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
           ),
           poseRes != ""
@@ -169,13 +180,13 @@ class _ExercisePageState extends State<ExercisePage> {
                   padding: EdgeInsets.symmetric(
                       vertical: 20, horizontal: 20),
                   decoration: BoxDecoration(
-                    color: Colors.limeAccent,
+                    color: Colors.teal,
                     borderRadius: BorderRadius.circular(50),
                   ),
-                  child: Image.asset(
-                    'images/nhoapp.png',
-                    height: 50,
-                    width: 50,
+                  child: const Icon(
+                    Icons.accessibility_new,
+                    color: Colors.white,
+                    size: 50,
                   ),
                 ),
                 InkWell(

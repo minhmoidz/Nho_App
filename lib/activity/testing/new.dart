@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:nhoapp/constants/app_colors.dart';
 
 // Đảm bảo bạn đã import các màn hình này
 import 'ExerciseListingScreen.dart';
 import 'ExercisePage.dart';
 import 'TrolyAI.dart';
-// import 'ChatScreen.dart'; // <--- Import màn hình chat của bạn tại đây
 
 class EntryScreen11 extends StatelessWidget {
   final dynamic section;
@@ -14,7 +14,7 @@ class EntryScreen11 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         title: const Text(
           'Tính năng mở rộng',
@@ -36,14 +36,14 @@ class EntryScreen11 extends StatelessWidget {
                 Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Colors.blue[600]!, Colors.blue[800]!],
+                      colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blue.withOpacity(0.3),
+                        color: AppColors.primary.withOpacity(0.3),
                         blurRadius: 15,
                         offset: const Offset(0, 5),
                       ),
@@ -138,9 +138,9 @@ class EntryScreen11 extends StatelessWidget {
                 _buildFeatureCard(
                   context,
                   title: 'Danh sách bài tập',
-                  description: 'Khám phá kho bài tập trị liệu',
+                  description: 'Khám phá kho bài tập trị liệu với AI',
                   icon: Icons.list_alt_rounded,
-                  color: Colors.purple,
+                  color: AppColors.primary,
                   onTap: () {
                     Navigator.push(
                       context,
@@ -156,9 +156,9 @@ class EntryScreen11 extends StatelessWidget {
                 _buildFeatureCard(
                   context,
                   title: 'Kiểm tra tư thế',
-                  description: 'Tương tác và chỉnh sửa tư thế tập',
+                  description: 'Phân tích và chỉnh sửa tư thế tập luyện',
                   icon: Icons.fitness_center_rounded,
-                  color: Colors.orange,
+                  color: AppColors.secondary,
                   onTap: () {
                     Navigator.push(
                       context,
@@ -170,13 +170,13 @@ class EntryScreen11 extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // 3. TÍNH NĂNG MỚI: CHAT AI
+                // 3. Trợ lý ảo AI
                 _buildFeatureCard(
                   context,
                   title: 'Trợ lý ảo AI',
                   description: 'Trò chuyện và hỏi đáp sức khỏe',
-                  icon: Icons.smart_toy_rounded, // Hoặc Icons.chat_bubble_rounded
-                  color: Colors.teal, // Chọn màu xanh ngọc cho khác biệt
+                  icon: Icons.smart_toy_rounded,
+                  color: Colors.teal,
                   onTap: () {
                      Navigator.push(
                        context,
@@ -184,7 +184,6 @@ class EntryScreen11 extends StatelessWidget {
                          builder: (_) => VoiceChatPage1(),
                        ),
                      );
-
                   },
                 ),
 

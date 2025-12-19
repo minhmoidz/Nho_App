@@ -380,7 +380,7 @@ class _VoiceChatPageState extends State<VoiceChatPage1> with TickerProviderState
         backgroundColor: Colors.white,
         elevation: 0,
         title: const Text(
-            "Chatbot Assistant",
+            "Trợ lý ảo AI",
             style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)
         ),
         centerTitle: true,

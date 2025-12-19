@@ -87,8 +87,8 @@ class _BrainTrainingScreenState extends State<BrainTrainingScreen> {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.primary, AppColors.primary],
+                  gradient: LinearGradient(
+                    colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -160,7 +160,7 @@ class _BrainTrainingScreenState extends State<BrainTrainingScreen> {
                 title: 'Lật Hình Tìm Cặp',
                 description: 'Rèn luyện trí nhớ với trò chơi lật hình cổ điển',
                 icon: Icons.grid_on,
-                color: AppColors.secondary,
+                color: const Color(0xFF5C9F71),
                 bestScore: _scoreService.getBestScore('memory_match'),
                 onTap: () => _navigateToGame(context, const MemoryMatchGame()),
               ),
@@ -171,7 +171,7 @@ class _BrainTrainingScreenState extends State<BrainTrainingScreen> {
                 title: 'Đố Vui Ca Dao',
                 description: 'Nhớ lại những câu ca dao, tục ngữ quen thuộc',
                 icon: Icons.menu_book,
-                color: AppColors.secondary,
+                color: const Color(0xFF80A884),
                 bestScore: _scoreService.getBestScore('proverb_quiz'),
                 onTap: () => _navigateToGame(context, const ProverbQuizGame()),
               ),
@@ -182,7 +182,7 @@ class _BrainTrainingScreenState extends State<BrainTrainingScreen> {
                 title: 'Nghe Âm Đoán Vật',
                 description: 'Đoán đồ vật qua tiếng kêu đặc trưng',
                 icon: Icons.volume_up,
-                color: AppColors.secondary,
+                color: const Color(0xFF6BAE82),
                 bestScore: _scoreService.getBestScore('sound_guess'),
                 onTap: () => _navigateToGame(context, const SoundGuessGame()),
               ),
