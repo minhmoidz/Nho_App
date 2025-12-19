@@ -536,7 +536,6 @@ final List<Medicine> sampleMedicines = [
   ),
 ];
 
-// Dữ liệu video đã cập nhật thêm videoUrl
 final List<VideoItem> sampleVideos = [
   VideoItem(
     id: 'v1',

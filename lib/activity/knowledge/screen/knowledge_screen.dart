@@ -37,12 +37,12 @@ class KnowledgeScreen extends StatelessWidget {
             ),
 
             // --- NỘI DUNG GỌI TỪ 3 FILE CON ---
-            const Expanded(
+            Expanded(
               child: TabBarView(
                 children: [
-                  ArticlesTab(), // Gọi từ file articles_tab.dart
+                  const ArticlesTab(), // Gọi từ file articles_tab.dart
                   VideosTab(),   // Gọi từ file videos_tab.dart
-                  MedicineTab(), // Gọi từ file medicine_tab.dart
+                  const MedicineTab(), // Gọi từ file medicine_tab.dart
                 ],
               ),
             ),

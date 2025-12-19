@@ -83,7 +83,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             CustomTopBar(
               appName: 'Nhớ App',
-              userName: 'Ông/bà',
+              userName: 'Ông',
               onAvatarTap: _goToProfileFromAvatar,
               // --- SỬA DÒNG NÀY ---
               // Thay vì gọi NotificationsPage(), ta truyền hàm _goToNotifications
@@ -137,7 +137,7 @@ class _HomePageState extends State<HomePage> {
               children: [
                 const SizedBox(height: 16),
                 Text(
-                  'Chúc ông/bà\nmột ngày tốt lành! ',
+                  'Chúc Ông một ngày tốt lành! ',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w800,

@@ -15,15 +15,17 @@ class _ArticlesTabState extends State<ArticlesTab> {
   List<dynamic> _articles = [];
   bool _isLoading = true;
 
+  // Ảnh mặc định nếu không tải được
+  final String _defaultImage = "https://i1-suckhoe.vnecdn.net/2023/01/01/logo-vnexpress-1-1672535695.jpg?w=1200&h=0&q=100&dpr=1&fit=crop&s=Op1g3-y5P8e-28y1J-3sIg";
+
   @override
   void initState() {
     super.initState();
     _fetchRealNews();
   }
 
-  // --- HÀM LẤY TIN TỨC TỪ VNEXPRESS ---
   Future<void> _fetchRealNews() async {
-    // Sử dụng api.rss2json.com để chuyển đổi RSS VnExpress sang JSON
+    // RSS Sức khỏe VnExpress
     const String rssUrl = "https://api.rss2json.com/v1/api.json?rss_url=https://vnexpress.net/rss/suc-khoe.rss";
 
     try {
@@ -40,20 +42,43 @@ class _ArticlesTabState extends State<ArticlesTab> {
         throw Exception("Lỗi kết nối: ${response.statusCode}");
       }
     } catch (e) {
-      print("Lỗi lấy tin: $e");
+      debugPrint("Lỗi lấy tin: $e");
       if (mounted) {
         setState(() => _isLoading = false);
       }
     }
   }
 
-  // --- HÀM MỞ TRÌNH DUYỆT ---
   Future<void> _launchURL(String url) async {
     final Uri uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      // Nếu không mở được bằng external, thử mở in-app
       await launchUrl(uri, mode: LaunchMode.platformDefault);
     }
+  }
+
+  // --- HÀM TRÍCH XUẤT ẢNH THÔNG MINH (FIX LỖI) ---
+  String _extractImageUrl(dynamic article) {
+    // 1. Thử lấy từ field 'thumbnail'
+    if (article['thumbnail'] != null && article['thumbnail'].toString().isNotEmpty) {
+      return article['thumbnail'];
+    }
+
+    // 2. Thử lấy từ field 'enclosure' (thường gặp trong RSS chuẩn)
+    if (article['enclosure'] != null && article['enclosure']['link'] != null) {
+      return article['enclosure']['link'];
+    }
+
+    // 3. QUAN TRỌNG: Quét nội dung 'description' để tìm thẻ <img src="...">
+    // VnExpress thường để ảnh ở đây mà rss2json đôi khi bỏ qua
+    if (article['description'] != null) {
+      final RegExp imgRegex = RegExp(r'<img[^>]+src="([^">]+)"');
+      final match = imgRegex.firstMatch(article['description']);
+      if (match != null) {
+        return match.group(1) ?? _defaultImage;
+      }
+    }
+
+    return _defaultImage;
   }
 
   @override
@@ -92,22 +117,16 @@ class _ArticlesTabState extends State<ArticlesTab> {
     );
   }
 
-  // --- WIDGET THẺ BÀI BÁO (ĐÃ KHẮC PHỤC LỖI ẢNH) ---
   Widget _buildNewsCard(dynamic article) {
-    // 1. Lấy URL ảnh và xử lý https
-    String imageUrl = article['thumbnail'] ?? '';
+    // Lấy URL ảnh bằng hàm mới
+    String imageUrl = _extractImageUrl(article);
 
-    // Nếu rỗng, dùng ảnh mặc định
-    if (imageUrl.isEmpty) {
-      imageUrl = "https://i1-suckhoe.vnecdn.net/2023/01/01/logo-vnexpress-1-1672535695.jpg?w=1200&h=0&q=100&dpr=1&fit=crop&s=Op1g3-y5P8e-28y1J-3sIg";
-    }
-
-    // Android rất ghét http thường, ép về https
+    // Chuyển http -> https để tránh lỗi bảo mật trên Android/iOS
     if (imageUrl.startsWith('http://')) {
       imageUrl = imageUrl.replaceFirst('http://', 'https://');
     }
 
-    // 2. Xử lý ngày tháng
+    // Xử lý ngày tháng
     String dateStr = article['pubDate'];
     try {
       DateTime date = DateTime.parse(dateStr);
@@ -127,7 +146,7 @@ class _ArticlesTabState extends State<ArticlesTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- ẢNH BÌA (FIXED) ---
+            // --- ẢNH BÌA ---
             Stack(
               alignment: Alignment.bottomLeft,
               children: [
@@ -136,11 +155,11 @@ class _ArticlesTabState extends State<ArticlesTab> {
                   height: 200,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  // QUAN TRỌNG: Header giả lập trình duyệt Chrome để server không chặn
+                  // --- CỰC KỲ QUAN TRỌNG: HEADERS ĐỂ QUA MẶT CHẶN ẢNH ---
                   headers: const {
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+                    "Referer": "https://vnexpress.net/", // Mấu chốt để load ảnh VnExpress
                   },
-                  // Hiệu ứng khi đang tải ảnh
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress == null) return child;
                     return Container(
@@ -148,27 +167,17 @@ class _ArticlesTabState extends State<ArticlesTab> {
                       width: double.infinity,
                       color: Colors.grey[200],
                       child: const Center(
-                        child: CircularProgressIndicator(
-                          color: Colors.teal,
-                          strokeWidth: 2,
-                        ),
+                        child: CircularProgressIndicator(color: Colors.teal, strokeWidth: 2),
                       ),
                     );
                   },
-                  // Xử lý khi lỗi ảnh
                   errorBuilder: (context, error, stackTrace) {
-                    return Container(
+                    // Nếu lỗi thì hiện ảnh mặc định
+                    return Image.network(
+                      _defaultImage,
                       height: 200,
                       width: double.infinity,
-                      color: Colors.grey[300],
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(Icons.image_not_supported, color: Colors.grey, size: 40),
-                          SizedBox(height: 5),
-                          Text("Không tải được ảnh", style: TextStyle(color: Colors.grey))
-                        ],
-                      ),
+                      fit: BoxFit.cover,
                     );
                   },
                 ),
@@ -180,7 +189,7 @@ class _ArticlesTabState extends State<ArticlesTab> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                        color: Colors.teal,
+                        color: Colors.teal.withOpacity(0.9),
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: const [
                           BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
@@ -195,25 +204,24 @@ class _ArticlesTabState extends State<ArticlesTab> {
               ],
             ),
 
-            // --- NỘI DUNG BÀI ---
+            // --- NỘI DUNG ---
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Tiêu đề
                   Text(
                     article['title'],
                     style: const TextStyle(
-                      fontSize: 19,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       height: 1.3,
                       color: Colors.black87,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
-
-                  // Ngày đăng & Nguồn
                   Row(
                     children: [
                       const Icon(Icons.access_time, size: 14, color: Colors.grey),
@@ -229,27 +237,6 @@ class _ArticlesTabState extends State<ArticlesTab> {
                       ),
                     ],
                   ),
-
-                  const SizedBox(height: 12),
-                  const Divider(),
-                  const SizedBox(height: 8),
-
-                  // Nút hành động
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Nhấn để đọc chi tiết",
-                        style: TextStyle(
-                            color: Colors.teal[700],
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15
-                        ),
-                      ),
-                      const SizedBox(width: 5),
-                      Icon(Icons.arrow_forward, size: 18, color: Colors.teal[700]),
-                    ],
-                  )
                 ],
               ),
             ),

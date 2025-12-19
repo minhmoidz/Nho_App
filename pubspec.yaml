@@ -98,6 +98,7 @@ flutter:
     - assets/images/pushup.gif
     - assets/images/squat.gif
     - assets/images/jumping.gif
+    - .env
 
   fonts:
     - family: Montserrat
