@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:nhoapp/activity/home/reminder/reminder_screen.dart';
 import 'package:nhoapp/activity/home/diary/create_diary_screen.dart';
 import 'package:nhoapp/activity/home/sos/sos_screen.dart';
@@ -6,7 +7,7 @@ import 'package:nhoapp/constants/app_colors.dart';
 import '../chatbot/screens/voice_chat_screen.dart';
 import '../knowledge/screen/knowledge_screen.dart';
 import '../login/auth_service.dart';
-import '../notification/notifications_page.dart'; // Đảm bảo đã import file này
+import '../notification/notifications_page.dart';
 import '../profile/profile_screen.dart';
 import '../game/screen/brain_training_screen.dart';
 import '../testing/new.dart';
@@ -52,6 +53,25 @@ class _HomePageState extends State<HomePage> {
     if (mounted) {
       Navigator.pushReplacementNamed(context, '/login');
     }
+  }
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return 'Chào buổi sáng! ';
+    } else if (hour < 18) {
+      return 'Chào buổi chiều! ';
+    } else {
+      return 'Chào buổi tối! ';
+    }
+  }
+
+  String _getCurrentDate() {
+    final now = DateTime.now();
+    final weekdayNames = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+    final weekday = weekdayNames[now.weekday % 7];
+    final formattedDate = DateFormat('dd/MM/yyyy').format(now);
+    return '$weekday, $formattedDate';
   }
 
   @override
@@ -117,7 +137,7 @@ class _HomePageState extends State<HomePage> {
               children: [
                 const SizedBox(height: 16),
                 Text(
-                  'Hôm nay bạn muốn làm gì?',
+                  _getGreeting(),
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w800,
@@ -128,9 +148,18 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Chọn một trong các tính năng bên dưới',
+                  _getCurrentDate(),
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 16,
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Chúc ông/bà một ngày tốt lành! ',
+                  style: TextStyle(
+                    fontSize: 14,
                     color: Colors.grey.shade600,
                     fontWeight: FontWeight.w500,
                   ),

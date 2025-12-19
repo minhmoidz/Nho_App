@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:nhoapp/constants/app_colors.dart';
 
-class CustomTopBar extends StatelessWidget {
+class CustomTopBar extends StatefulWidget {
   final String appName;
   final String? userName;
   final String? avatarUrl;
@@ -20,6 +22,35 @@ class CustomTopBar extends StatelessWidget {
   });
 
   @override
+  State<CustomTopBar> createState() => _CustomTopBarState();
+}
+
+class _CustomTopBarState extends State<CustomTopBar> {
+  late Timer _timer;
+  String _currentTime = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _updateTime();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _updateTime();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  void _updateTime() {
+    setState(() {
+      _currentTime = DateFormat('HH:mm:ss').format(DateTime.now());
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SafeArea(
       bottom: false,
@@ -30,58 +61,27 @@ class CustomTopBar extends StatelessWidget {
           children: [
             // --- INFO SECTION ---
             Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Greeting text với animation tinh tế
-                  Row(
-                    children: [
-                      Text(
-                        _getGreeting(),
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey.shade600,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: 0.2,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      TweenAnimationBuilder<double>(
-                        tween: Tween(begin: 0.0, end: 1.0),
-                        duration: const Duration(milliseconds: 800),
-                        builder: (context, value, child) {
-                          return Transform.rotate(
-                            angle: value * 0.5,
-                            child: const Text('👋', style: TextStyle(fontSize: 16)),
-                          );
-                        },
-                      ),
+              child: ShaderMask(
+                shaderCallback: (bounds) => LinearGradient(
+                  colors: [
+                    const Color(0xFF1E293B),
+                    const Color(0xFF334155),
+                  ],
+                ).createShader(bounds),
+                child: Text(
+                  _currentTime,
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: 1.5,
+                    height: 1.2,
+                    fontFeatures: [
+                      FontFeature.tabularFigures(),
                     ],
                   ),
-                  const SizedBox(height: 6),
-                  // User name với gradient text effect
-                  ShaderMask(
-                    shaderCallback: (bounds) => LinearGradient(
-                      colors: [
-                        const Color(0xFF1E293B),
-                        const Color(0xFF334155),
-                      ],
-                    ).createShader(bounds),
-                    child: Text(
-                      userName ?? appName,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        letterSpacing: -0.8,
-                        height: 1.2,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
+                  maxLines: 1,
+                ),
               ),
             ),
 
@@ -117,7 +117,7 @@ class CustomTopBar extends StatelessWidget {
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: onNotificationTap,
+                      onTap: widget.onNotificationTap,
                       customBorder: const CircleBorder(),
                       splashColor: Colors.blue.withOpacity(0.2),
                       highlightColor: Colors.blue.withOpacity(0.1),
@@ -127,13 +127,13 @@ class CustomTopBar extends StatelessWidget {
                           clipBehavior: Clip.none,
                           children: [
                             Icon(
-                              notificationCount > 0
+                              widget.notificationCount > 0
                                   ? Icons.notifications
                                   : Icons.notifications_outlined,
                               size: 24,
                               color: const Color(0xFF1E293B),
                             ),
-                            if (notificationCount > 0)
+                            if (widget.notificationCount > 0)
                               Positioned(
                                 right: -4,
                                 top: -4,
@@ -163,9 +163,9 @@ class CustomTopBar extends StatelessWidget {
                                     minHeight: 18,
                                   ),
                                   child: Text(
-                                    notificationCount > 99
+                                    widget.notificationCount > 99
                                         ? '99+'
-                                        : '$notificationCount',
+                                        : '${widget.notificationCount}',
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 10,
@@ -188,12 +188,5 @@ class CustomTopBar extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _getGreeting() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) return 'Chào buổi sáng';
-    if (hour < 18) return 'Chào buổi chiều';
-    return 'Chào buổi tối';
   }
 }

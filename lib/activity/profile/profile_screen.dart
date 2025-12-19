@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nhoapp/constants/app_colors.dart';
 import '../login/auth_service.dart';
+import '../settings/settings_screen.dart';
 import 'update_profile.dart';
 import 'profile_api_service.dart';
 import 'user_profile.dart';
@@ -190,8 +191,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   ),
                 ]),
                 const SizedBox(height: 40),
-                _buildEditButton(user),
-                const SizedBox(height: 24),
+                _buildSettingsButton(),
+                const SizedBox(height: 16),
                 _buildLogoutButton(),
                 const SizedBox(height: 40),
               ],
@@ -342,28 +343,20 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
-  Widget _buildEditButton(UserProfile user) {
+  Widget _buildSettingsButton() {
     return SizedBox(
       width: double.infinity,
       height: 55,
       child: ElevatedButton.icon(
-        onPressed: () async {
-          final result = await Navigator.push<UserProfile>(
+        onPressed: () {
+          Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (_) => UpdateProfileScreen(user: user),
-            ),
+            MaterialPageRoute(builder: (_) => const SettingsScreen()),
           );
-
-          if (result != null && mounted) {
-            setState(() {
-              _profileFuture = Future.value(result);
-            });
-          }
         },
-        icon: const Icon(Icons.edit),
+        icon: const Icon(Icons.settings),
         label: const Text(
-          "Chỉnh sửa",
+          "Cài đặt",
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         style: ElevatedButton.styleFrom(
