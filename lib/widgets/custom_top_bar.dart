@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:nhoapp/constants/app_colors.dart';
 
-class CustomTopBar extends StatelessWidget {
+class CustomTopBar extends StatefulWidget {
   final String appName;
   final String? userName;
   final String? avatarUrl;
@@ -20,165 +22,169 @@ class CustomTopBar extends StatelessWidget {
   });
 
   @override
+  State<CustomTopBar> createState() => _CustomTopBarState();
+}
+
+class _CustomTopBarState extends State<CustomTopBar> {
+  late Timer _timer;
+  String _currentTime = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _updateTime();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _updateTime();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  void _updateTime() {
+    setState(() {
+      _currentTime = DateFormat('HH:mm').format(DateTime.now());
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Xác định tên hiển thị: Nếu có tên user thì dùng, không thì dùng tên App
-    final String displayName = (userName != null && userName!.isNotEmpty)
-        ? userName!
-        : appName;
-
-    final String subTitle = (userName != null && userName!.isNotEmpty)
-        ? 'Xin chào,'
-        : 'Chào mừng đến với';
-
     return SafeArea(
       bottom: false,
       child: Container(
-        color: AppColors.surface, // Hoặc Colors.transparent nếu muốn nền ảnh
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        color: AppColors.surface,
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
         child: Row(
           children: [
-            // --- LEFT SECTION: AVATAR & GREETING ---
-            GestureDetector(
-              onTap: onAvatarTap,
-              child: Row(
-                children: [
-                  // 1. Avatar
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.teal.shade100, width: 2),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: CircleAvatar(
-                      radius: 24,
-                      backgroundColor: Colors.white,
-                      backgroundImage: (avatarUrl != null && avatarUrl!.isNotEmpty)
-                          ? NetworkImage(avatarUrl!)
-                          : null,
-                      child: (avatarUrl == null || avatarUrl!.isEmpty)
-                          ? const Icon(Icons.person, color: Colors.teal)
-                          : null,
-                    ),
-                  ),
-
-                  const SizedBox(width: 12),
-
-                  // 2. Text Info
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        subTitle,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        displayName,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1E293B),
-                          letterSpacing: 0.5,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+            // --- INFO SECTION ---
+            Expanded(
+              child: ShaderMask(
+                shaderCallback: (bounds) => LinearGradient(
+                  colors: [
+                    const Color(0xFF1E293B),
+                    const Color(0xFF334155),
+                  ],
+                ).createShader(bounds),
+                child: Text(
+                  _currentTime,
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: 1.5,
+                    height: 1.2,
+                    fontFeatures: [
+                      FontFeature.tabularFigures(),
                     ],
                   ),
-                ],
+                  maxLines: 1,
+                ),
               ),
             ),
 
-            const Spacer(), // Đẩy phần thông báo sang phải
-
-            // --- RIGHT SECTION: NOTIFICATION BUTTON ---
-            _buildNotificationButton(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNotificationButton() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 2,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onNotificationTap,
-          customBorder: const CircleBorder(),
-          splashColor: Colors.teal.withOpacity(0.1),
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Stack(
-              clipBehavior: Clip.none,
+            // --- ACTIONS GROUP ---
+            Row(
               children: [
-                Icon(
-                  notificationCount > 0
-                      ? Icons.notifications_active_rounded
-                      : Icons.notifications_outlined,
-                  size: 26,
-                  color: notificationCount > 0
-                      ? const Color(0xFFFF6B6B) // Icon màu đỏ nhạt nếu có thông báo
-                      : const Color(0xFF64748B), // Màu xám xanh nếu không có
-                ),
-
-                // Badge số lượng
-                if (notificationCount > 0)
-                  Positioned(
-                    right: -2,
-                    top: -2,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFF4757),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.white, width: 1.5),
+                // Notification button với glassmorphism effect
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.white.withOpacity(0.9),
+                        Colors.white.withOpacity(0.7),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                        spreadRadius: 0,
                       ),
-                      constraints: const BoxConstraints(
-                        minWidth: 16,
-                        minHeight: 16,
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
                       ),
-                      child: Text(
-                        notificationCount > 99 ? '99+' : '$notificationCount',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: widget.onNotificationTap,
+                      customBorder: const CircleBorder(),
+                      splashColor: Colors.blue.withOpacity(0.2),
+                      highlightColor: Colors.blue.withOpacity(0.1),
+                      child: Container(
+                        padding: const EdgeInsets.all(11),
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Icon(
+                              widget.notificationCount > 0
+                                  ? Icons.notifications
+                                  : Icons.notifications_outlined,
+                              size: 24,
+                              color: const Color(0xFF1E293B),
+                            ),
+                            if (widget.notificationCount > 0)
+                              Positioned(
+                                right: -4,
+                                top: -4,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFFFF6B6B),
+                                        Color(0xFFEE5A6F),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.red.withOpacity(0.4),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 18,
+                                    minHeight: 18,
+                                  ),
+                                  child: Text(
+                                    widget.notificationCount > 99
+                                        ? '99+'
+                                        : '${widget.notificationCount}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      height: 1.2,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
-                        textAlign: TextAlign.center,
                       ),
                     ),
                   ),
+                ),
               ],
             ),
-          ),
+          ],
         ),
       ),
     );
