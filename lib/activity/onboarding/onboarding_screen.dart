@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nhoapp/constants/app_colors.dart';
-import 'package:nhoapp/activity/onboarding/onboarding_screen.dart';
 import 'package:nhoapp/widgets/auth_check.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -76,15 +75,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ),
       ],
 
-      // --- CẤU HÌNH NÚT ĐIỀU HƯỚNG ---
+
       onDone: () => _onIntroEnd(context),
       onSkip: () => _onIntroEnd(context),
 
-      showSkipButton: true, // Hiển thị nút Bỏ qua
-      showNextButton: true, // Hiển thị nút Tiếp theo
-      showBackButton: false, // Tắt nút Back (thường Intro chỉ cần Next/Skip)
+      showSkipButton: true,
+      showNextButton: true,
+      showBackButton: false,
 
-      // 1. Nút Bỏ qua (Skip) - Đơn giản, tinh tế
       skip: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
@@ -97,7 +95,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ),
       ),
 
-      // 2. Nút Tiếp theo (Next) - Hình tròn nổi bật
       next: Container(
         width: 50,
         height: 50,
@@ -108,7 +105,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         child: Icon(Icons.arrow_forward_rounded, color: AppColors.primary, size: 28),
       ),
 
-      // 3. Nút Hoàn tất (Done/Bắt đầu) - Nút dài, đậm, kêu gọi hành động
       done: SizedBox(
         width: double.infinity,
         child: Container(
@@ -138,11 +134,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ),
 
 
-      // Hiệu ứng chuyển trang & Vị trí nút
       curve: Curves.fastLinearToSlowEaseIn,
       controlsMargin: const EdgeInsets.all(16),
 
-      // --- TRANG TRÍ DẤU CHẤM (DOTS) ---
       dotsDecorator: DotsDecorator(
         size: const Size(8.0, 8.0),
         color: Colors.grey.shade300, // Màu chấm chưa chọn

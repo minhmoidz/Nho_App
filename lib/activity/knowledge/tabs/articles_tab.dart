@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:nhoapp/constants/app_colors.dart';
 
 class ArticlesTab extends StatefulWidget {
   const ArticlesTab({super.key});
@@ -15,8 +16,20 @@ class _ArticlesTabState extends State<ArticlesTab> {
   List<dynamic> _articles = [];
   bool _isLoading = true;
 
-  // Ảnh mặc định nếu không tải được
-  final String _defaultImage = "https://i1-suckhoe.vnecdn.net/2023/01/01/logo-vnexpress-1-1672535695.jpg?w=1200&h=0&q=100&dpr=1&fit=crop&s=Op1g3-y5P8e-28y1J-3sIg";
+  // --- KHO ẢNH SỨC KHỎE CHẤT LƯỢNG CAO (UNSPLASH) ---
+  // Danh sách này sẽ được dùng xoay vòng cho các tin tức
+  final List<String> _stockImages = [
+    "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?q=80&w=800", // Bác sĩ
+    "https://images.unsplash.com/photo-1544367563-12123d8965cd?q=80&w=800", // Yoga/Thiền
+    "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=800", // Tập thể dục
+    "https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?q=80&w=800", // Y tá/Chăm sóc
+    "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800", // Thực phẩm lành mạnh
+    "https://plus.unsplash.com/premium_photo-1664474619075-644dd191935f?q=80&w=800", // Người cao tuổi vui vẻ
+    "https://images.unsplash.com/photo-1505576399279-565b52d4ac71?q=80&w=800", // Bệnh viện sạch sẽ
+    "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=800", // Ống nghe y tế
+    "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=800", // Nghiên cứu/Thuốc
+    "https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=800", // Trái cây/Vitamin
+  ];
 
   @override
   void initState() {
@@ -56,35 +69,10 @@ class _ArticlesTabState extends State<ArticlesTab> {
     }
   }
 
-  // --- HÀM TRÍCH XUẤT ẢNH THÔNG MINH (FIX LỖI) ---
-  String _extractImageUrl(dynamic article) {
-    // 1. Thử lấy từ field 'thumbnail'
-    if (article['thumbnail'] != null && article['thumbnail'].toString().isNotEmpty) {
-      return article['thumbnail'];
-    }
-
-    // 2. Thử lấy từ field 'enclosure' (thường gặp trong RSS chuẩn)
-    if (article['enclosure'] != null && article['enclosure']['link'] != null) {
-      return article['enclosure']['link'];
-    }
-
-    // 3. QUAN TRỌNG: Quét nội dung 'description' để tìm thẻ <img src="...">
-    // VnExpress thường để ảnh ở đây mà rss2json đôi khi bỏ qua
-    if (article['description'] != null) {
-      final RegExp imgRegex = RegExp(r'<img[^>]+src="([^">]+)"');
-      final match = imgRegex.firstMatch(article['description']);
-      if (match != null) {
-        return match.group(1) ?? _defaultImage;
-      }
-    }
-
-    return _defaultImage;
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator(color: Colors.teal));
+      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
     }
 
     if (_articles.isEmpty) {
@@ -92,12 +80,12 @@ class _ArticlesTabState extends State<ArticlesTab> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.wifi_off, size: 50, color: Colors.grey),
+            const Icon(Icons.newspaper, size: 50, color: Colors.grey),
             const SizedBox(height: 10),
-            const Text("Không tải được tin tức.", style: TextStyle(color: Colors.grey, fontSize: 16)),
+            const Text("Không tải được tin tức.", style: TextStyle(color: Colors.grey)),
             TextButton(
               onPressed: _fetchRealNews,
-              child: const Text("Thử lại", style: TextStyle(color: Colors.teal)),
+              child: const Text("Thử lại", style: TextStyle(color: AppColors.primary)),
             )
           ],
         ),
@@ -111,34 +99,32 @@ class _ArticlesTabState extends State<ArticlesTab> {
         padding: const EdgeInsets.all(16),
         itemCount: _articles.length,
         itemBuilder: (context, index) {
-          return _buildNewsCard(_articles[index]);
+          // --- LOGIC CHỌN ẢNH ---
+          // Dùng phép chia lấy dư (%) để xoay vòng danh sách ảnh
+          // Ví dụ: Tin số 1 dùng ảnh 1, Tin số 11 dùng lại ảnh 1.
+          // Cách này giúp ảnh luôn hiển thị ổn định, không bị nháy khi cuộn lên xuống.
+          final String randomImage = _stockImages[index % _stockImages.length];
+
+          return _buildNewsCard(_articles[index], randomImage);
         },
       ),
     );
   }
 
-  Widget _buildNewsCard(dynamic article) {
-    // Lấy URL ảnh bằng hàm mới
-    String imageUrl = _extractImageUrl(article);
-
-    // Chuyển http -> https để tránh lỗi bảo mật trên Android/iOS
-    if (imageUrl.startsWith('http://')) {
-      imageUrl = imageUrl.replaceFirst('http://', 'https://');
-    }
-
+  Widget _buildNewsCard(dynamic article, String imageUrl) {
     // Xử lý ngày tháng
     String dateStr = article['pubDate'];
     try {
       DateTime date = DateTime.parse(dateStr);
-      dateStr = DateFormat('dd/MM/yyyy - HH:mm').format(date);
+      dateStr = DateFormat('dd/MM/yyyy').format(date);
     } catch (e) {
-      dateStr = "";
+      dateStr = "Mới nhất";
     }
 
     return Card(
       margin: const EdgeInsets.only(bottom: 20),
-      elevation: 4,
-      shadowColor: Colors.black26,
+      elevation: 3,
+      shadowColor: Colors.black12,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -146,58 +132,62 @@ class _ArticlesTabState extends State<ArticlesTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- ẢNH BÌA ---
+            // --- ẢNH BÌA (Dùng ảnh kho) ---
             Stack(
-              alignment: Alignment.bottomLeft,
               children: [
                 Image.network(
-                  imageUrl,
-                  height: 200,
+                  imageUrl, // Sử dụng link ảnh từ danh sách có sẵn
+                  height: 180,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  // --- CỰC KỲ QUAN TRỌNG: HEADERS ĐỂ QUA MẶT CHẶN ẢNH ---
-                  headers: const {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-                    "Referer": "https://vnexpress.net/", // Mấu chốt để load ảnh VnExpress
-                  },
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress == null) return child;
                     return Container(
-                      height: 200,
-                      width: double.infinity,
+                      height: 180,
                       color: Colors.grey[200],
-                      child: const Center(
-                        child: CircularProgressIndicator(color: Colors.teal, strokeWidth: 2),
-                      ),
+                      child: const Center(child: Icon(Icons.image, color: Colors.grey)),
                     );
                   },
                   errorBuilder: (context, error, stackTrace) {
-                    // Nếu lỗi thì hiện ảnh mặc định
-                    return Image.network(
-                      _defaultImage,
-                      height: 200,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
+                    return Container(
+                      height: 180,
+                      color: Colors.teal.shade100,
+                      child: const Center(child: Icon(Icons.broken_image, color: AppColors.primary)),
                     );
                   },
                 ),
 
-                // Tag chủ đề
+                // Lớp phủ đen mờ để chữ nổi hơn nếu cần thiết
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    height: 60,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Tag "Tin mới"
                 Positioned(
                   top: 12,
                   right: 12,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
-                        color: Colors.teal.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: const [
-                          BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
-                        ]
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
                     ),
                     child: const Text(
                       "Sức Khỏe",
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                      style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -213,27 +203,27 @@ class _ArticlesTabState extends State<ArticlesTab> {
                   Text(
                     article['title'],
                     style: const TextStyle(
-                      fontSize: 18,
+                      fontSize: 17,
                       fontWeight: FontWeight.bold,
                       height: 1.3,
-                      color: Colors.black87,
+                      color: Color(0xFF2D3748),
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Row(
                     children: [
-                      const Icon(Icons.access_time, size: 14, color: Colors.grey),
-                      const SizedBox(width: 4),
+                      const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+                      const SizedBox(width: 5),
                       Text(
                         dateStr,
                         style: TextStyle(color: Colors.grey[600], fontSize: 13),
                       ),
                       const Spacer(),
-                      const Text(
-                        "VnExpress",
-                        style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold, fontSize: 12),
+                      Text(
+                        "Xem chi tiết >>",
+                        style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600, fontSize: 13),
                       ),
                     ],
                   ),
