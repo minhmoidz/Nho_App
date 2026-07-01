@@ -1,4 +1,4 @@
-// lib/models/game_score.dart
+﻿// lib/models/game_score.dart
 class GameScore {
   final String gameType;
   final int score;

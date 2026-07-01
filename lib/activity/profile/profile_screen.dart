@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nhoapp/constants/app_colors.dart';
 import '../login/auth_service.dart';
-import '../settings/settings_screen.dart';
 import 'update_profile.dart';
 import 'profile_api_service.dart';
 import 'user_profile.dart';
@@ -190,9 +189,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     user.address ?? "Chưa cập nhật",
                   ),
                 ]),
-                const SizedBox(height: 40),
-                _buildSettingsButton(),
-                const SizedBox(height: 16),
                 _buildLogoutButton(),
                 const SizedBox(height: 40),
               ],
@@ -340,35 +336,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
       height: 1,
       thickness: 1,
       indent: 76,
-    );
-  }
-
-  Widget _buildSettingsButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 55,
-      child: ElevatedButton.icon(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const SettingsScreen()),
-          );
-        },
-        icon: const Icon(Icons.settings),
-        label: const Text(
-          "Cài đặt",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: AppColors.primary,
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: AppColors.secondary),
-          ),
-        ),
-      ),
     );
   }
 

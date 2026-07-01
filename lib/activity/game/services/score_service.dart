@@ -1,4 +1,4 @@
-// lib/services/score_service.dart
+﻿// lib/services/score_service.dart
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/game_score.dart';

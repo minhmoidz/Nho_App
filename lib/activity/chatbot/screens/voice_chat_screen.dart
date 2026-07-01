@@ -488,7 +488,7 @@ Dựa vào hình ảnh và câu hỏi để tư vấn.
     final isUser = message.isUser;
     final bgColor = isUser ? null : (_isCameraOn ? Colors.white.withOpacity(0.9) : Colors.white);
     return Padding(padding: const EdgeInsets.only(bottom: 16), child: Row(mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start, children: [
-      if (!isUser) const Padding(padding: EdgeInsets.only(right: 8), child: CircleAvatar(radius: 16, backgroundColor: Colors.white, child: Icon(Icons.smart_toy, size: 18, color: Colors.blueGrey))),
+      if (!isUser) const Padding(padding: EdgeInsets.only(right: 8), child: CircleAvatar(radius: 16, backgroundColor: Colors.white, child: Icon(Icons.support_agent_rounded, size: 18, color: Colors.blueGrey))),
       Flexible(child: Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), decoration: BoxDecoration(gradient: isUser ? const LinearGradient(colors: [AppColors.primary, AppColors.secondary]) : null, color: bgColor, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))]), child: Text(message.content, style: TextStyle(fontSize: 16, height: 1.4, color: isUser ? Colors.white : Colors.black87, fontWeight: FontWeight.bold)))),
     ]));
   }

@@ -16,7 +16,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.minh.nhoapp"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = "28.2.13676358"
 
     compileOptions {
@@ -55,7 +55,11 @@ android {
         // Cấu hình cho bản Release (Chạy khi build APK/AAB hoặc run --release)
         getByName("release") {
             // Dùng tạm key debug để test release. Khi up store nhớ đổi lại config này.
-            signingConfig = signingConfigs.getByName("release")
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            } else {
+                signingConfig = signingConfigs.getByName("debug")
+            }
 
             // BẬT NÉN CODE & TỐI ƯU RESOURCES
             isMinifyEnabled = true

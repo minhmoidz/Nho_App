@@ -11,10 +11,10 @@ class TermsDialogWidget extends StatelessWidget {
 *Cập nhật lần cuối: 19/12/2025*
 
 **1. Chấp nhận điều khoản**
-Bằng việc tải xuống, cài đặt và sử dụng Nhớ App, bạn đồng ý tuân thủ các điều khoản và điều kiện được nêu trong tài liệu này. Nếu không đồng ý, vui lòng không sử dụng ứng dụng.
+Bằng việc tải xuống, cài đặt và sử dụng An Tâm App, bạn đồng ý tuân thủ các điều khoản và điều kiện được nêu trong tài liệu này. Nếu không đồng ý, vui lòng không sử dụng ứng dụng.
 
 **2. Mục đích sử dụng**
-Nhớ App được thiết kế để hỗ trợ người cao tuổi trong việc:
+An Tâm App được thiết kế để hỗ trợ người cao tuổi trong việc:
 * Quản lý sức khỏe và nhắc nhở uống thuốc
 * Ghi nhật ký tâm trạng và hoạt động hàng ngày
 * Trò chuyện với trợ lý AI về các vấn đề sức khỏe cơ bản
@@ -30,10 +30,10 @@ Nhớ App được thiết kế để hỗ trợ người cao tuổi trong việ
 * Tham khảo ý kiến bác sĩ trước khi đưa ra quyết định về sức khỏe
 
 **4. Quyền sở hữu trí tuệ**
-Tất cả nội dung, mã nguồn, thiết kế giao diện, logo và tài liệu trong Nhớ App thuộc quyền sở hữu của Nhớ App Team. Người dùng không được sao chép, phân phối hoặc sử dụng cho mục đích thương mại mà không có sự cho phép bằng văn bản.
+Tất cả nội dung, mã nguồn, thiết kế giao diện, logo và tài liệu trong An Tâm App thuộc quyền sở hữu của An Tâm App Team. Người dùng không được sao chép, phân phối hoặc sử dụng cho mục đích thương mại mà không có sự cho phép bằng văn bản.
 
 **5. Giới hạn trách nhiệm**
-* Nhớ App không chịu trách nhiệm về các quyết định y tế dựa trên thông tin từ ứng dụng
+* An Tâm App không chịu trách nhiệm về các quyết định y tế dựa trên thông tin từ ứng dụng
 * Không đảm bảo ứng dụng hoạt động không bị gián đoạn hoặc lỗi
 * Không chịu trách nhiệm về thiệt hại gián tiếp, ngẫu nhiên hoặc hệ quả phát sinh từ việc sử dụng ứng dụng
 

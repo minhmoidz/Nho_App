@@ -86,7 +86,7 @@ class _MyAppState extends State<MyApp> {
           // Gắn key vào đây để điều khiển điều hướng toàn cục
           navigatorKey: navigatorKey,
 
-          title: 'Nhớ App',
+          title: 'An Tâm App',
           debugShowCheckedModeBanner: false,
 
           // Áp dụng text scale factor toàn app

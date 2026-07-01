@@ -39,7 +39,7 @@ A:
 A: Trang chủ → "Nhắc nhở" → Nút "+" → Nhập thông tin thuốc (tên, liều lượng, giờ uống) → Chọn lịch lặp lại → Lưu. Ứng dụng sẽ thông báo đúng giờ!
 
 **Q: Tôi không nghe thấy thông báo?**
-A: Kiểm tra: Cài đặt → Thông báo (bật) → Âm thanh (bật) → Cài đặt điện thoại → Cho phép thông báo từ Nhớ App.
+A: Kiểm tra: Cài đặt → Thông báo (bật) → Âm thanh (bật) → Cài đặt điện thoại → Cho phép thông báo từ An Tâm App.
 
 ---
 **Nhật ký sức khỏe**
@@ -88,7 +88,7 @@ A: Cài đặt → Tài khoản → Xóa tài khoản → Xác nhận. Tất c�
 **Chi phí**
 
 **Q: Ứng dụng có miễn phí không?**
-A: Có! Nhớ App hoàn toàn MIỄN PHÍ, không có phí ẩn. Tất cả tính năng đều sẵn sàng cho người dùng.
+A: Có! An Tâm App hoàn toàn MIỄN PHÍ, không có phí ẩn. Tất cả tính năng đều sẵn sàng cho người dùng.
 
 ---
 **Hỗ trợ kỹ thuật**
@@ -98,7 +98,7 @@ A:
 1. Tắt và mở lại ứng dụng
 2. Kiểm tra kết nối Internet
 3. Cập nhật phiên bản mới nhất
-4. Xóa bộ nhớ cache: Cài đặt điện thoại → Ứng dụng → Nhớ App → Xóa cache
+4. Xóa bộ nhớ cache: Cài đặt điện thoại → Ứng dụng → An Tâm App → Xóa cache
 5. Nếu vẫn lỗi: Liên hệ support@nhoapp.com
 
 ---

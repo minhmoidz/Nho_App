@@ -56,7 +56,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       // --- DANH SÁCH CÁC TRANG ---
       pages: [
         PageViewModel(
-          title: "Chào mừng đến với\nNhớ App",
+          title: "Chào mừng đến với\nAn Tâm App",
           body: "Ứng dụng thông minh hỗ trợ sức khỏe và cuộc sống dành riêng cho bạn.",
           image: _buildImage('logo-remove-bg.png', 280),
           decoration: pageDecoration,

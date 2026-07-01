@@ -1,4 +1,4 @@
-class UserProfile {
+﻿class UserProfile {
   final String fullName;
   final String phone;
   final String? address;

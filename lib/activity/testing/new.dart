@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nhoapp/constants/app_colors.dart';
 
-// Đảm bảo bạn đã import các màn hình này
 import 'ExerciseListingScreen.dart';
 import 'ExercisePage.dart';
 import 'TrolyAI.dart';
@@ -81,7 +80,7 @@ class EntryScreen11 extends StatelessWidget {
                 ),
                 const SizedBox(height: 32),
 
-                // Thẻ cảnh báo (Warning card)
+                // Thẻ cảnh báo
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.amber[50],
@@ -132,8 +131,6 @@ class EntryScreen11 extends StatelessWidget {
                 ),
                 const SizedBox(height: 32),
 
-                // --- DANH SÁCH CÁC TÍNH NĂNG ---
-
                 // 1. Danh sách bài tập
                 _buildFeatureCard(
                   context,
@@ -144,15 +141,13 @@ class EntryScreen11 extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => ExerciseListingScreen(),
-                      ),
+                      MaterialPageRoute(builder: (_) => ExerciseListingScreen()),
                     );
                   },
                 ),
                 const SizedBox(height: 16),
 
-                // 2. Kiểm tra tư thế (AI Camera)
+                // 2. Kiểm tra tư thế
                 _buildFeatureCard(
                   context,
                   title: 'Kiểm tra tư thế',
@@ -162,9 +157,7 @@ class EntryScreen11 extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => ExercisePage(),
-                      ),
+                      MaterialPageRoute(builder: (_) => ExercisePage()),
                     );
                   },
                 ),
@@ -175,15 +168,13 @@ class EntryScreen11 extends StatelessWidget {
                   context,
                   title: 'Trợ lý ảo AI',
                   description: 'Trò chuyện và hỏi đáp sức khỏe',
-                  icon: Icons.smart_toy_rounded,
+                  icon: Icons.support_agent_rounded,
                   color: Colors.teal,
                   onTap: () {
-                     Navigator.push(
-                       context,
-                       MaterialPageRoute(
-                         builder: (_) => VoiceChatPage1(),
-                       ),
-                     );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => VoiceChatPage1()),
+                    );
                   },
                 ),
 
@@ -196,15 +187,14 @@ class EntryScreen11 extends StatelessWidget {
     );
   }
 
-  // Widget xây dựng thẻ tính năng
   Widget _buildFeatureCard(
-      BuildContext context, {
-        required String title,
-        required String description,
-        required IconData icon,
-        required Color color,
-        required VoidCallback onTap,
-      }) {
+    BuildContext context, {
+    required String title,
+    required String description,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
@@ -226,7 +216,6 @@ class EntryScreen11 extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                // Icon box
                 Container(
                   width: 60,
                   height: 60,
@@ -234,15 +223,9 @@ class EntryScreen11 extends StatelessWidget {
                     color: color.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(
-                    icon,
-                    size: 32,
-                    color: color,
-                  ),
+                  child: Icon(icon, size: 32, color: color),
                 ),
                 const SizedBox(width: 16),
-
-                // Text info
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -258,21 +241,12 @@ class EntryScreen11 extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         description,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                       ),
                     ],
                   ),
                 ),
-
-                // Arrow icon
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 20,
-                  color: Colors.grey[400],
-                ),
+                Icon(Icons.arrow_forward_ios_rounded, size: 20, color: Colors.grey[400]),
               ],
             ),
           ),

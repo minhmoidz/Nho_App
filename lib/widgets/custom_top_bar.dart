@@ -13,7 +13,7 @@ class CustomTopBar extends StatefulWidget {
 
   const CustomTopBar({
     super.key,
-    this.appName = 'Nhớ App',
+    this.appName = 'An Tâm App',
     this.userName,
     this.avatarUrl,
     this.notificationCount = 0,

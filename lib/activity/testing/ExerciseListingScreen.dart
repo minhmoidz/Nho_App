@@ -86,7 +86,7 @@ class _ExerciseListingScreenState extends State<ExerciseListingScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => DetectionScreen(exerciseDataModel: exerciseList[index]),
+                        builder: (context) => DetectionScreen(exerciseName: exercise.title),
                       ),
                     );
                   },
@@ -114,7 +114,7 @@ class _ExerciseListingScreenState extends State<ExerciseListingScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                exerciseList[index].title,
+                                exercise.title,
                                 style: const TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
@@ -142,7 +142,7 @@ class _ExerciseListingScreenState extends State<ExerciseListingScreen> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: Image.asset(
-                            "assets/images/${exerciseList[index].image}",
+                            "assets/images/${exercise.image}",
                             width: 100,
                             fit: BoxFit.contain,
                           ),

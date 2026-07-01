@@ -21,14 +21,13 @@ class _VoiceChatPageState extends State<VoiceChatPage1> with TickerProviderState
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  // Animation cho icon Mic
   late AnimationController _micAnimController;
 
-  bool _isListening = false; // Đang thu âm
-  bool _isSpeaking = false;  // Bot đang nói
+  bool _isListening = false;
+  bool _isSpeaking = false;
 
   String _liveVoiceText = "";
-  List<_Message> _messages = [];
+  final List<_Message> _messages = [];
 
   CameraController? _cameraController;
   List<CameraDescription> _cameras = [];
@@ -51,7 +50,6 @@ class _VoiceChatPageState extends State<VoiceChatPage1> with TickerProviderState
     await _tts.setLanguage("vi-VN");
     await _tts.setSpeechRate(0.5);
 
-    // --- LẮNG NGHE TRẠNG THÁI NÓI CỦA BOT ---
     _tts.setStartHandler(() {
       setState(() => _isSpeaking = true);
     });
@@ -69,13 +67,11 @@ class _VoiceChatPageState extends State<VoiceChatPage1> with TickerProviderState
     });
   }
 
-  // Hàm dừng bot nói thủ công
   Future<void> _stopSpeaking() async {
     await _tts.stop();
     setState(() => _isSpeaking = false);
   }
 
-  // --- CAMERA LOGIC (Giữ nguyên) ---
   Future<void> _initializeCamera() async {
     final status = await Permission.camera.request();
     if (!status.isGranted) return;
@@ -83,7 +79,7 @@ class _VoiceChatPageState extends State<VoiceChatPage1> with TickerProviderState
       _cameras = await availableCameras();
       if (_cameras.isEmpty) return;
       final frontCamera = _cameras.firstWhere(
-            (camera) => camera.lensDirection == CameraLensDirection.front,
+        (camera) => camera.lensDirection == CameraLensDirection.front,
         orElse: () => _cameras.first,
       );
       _cameraController = CameraController(frontCamera, ResolutionPreset.medium, enableAudio: false);
@@ -116,9 +112,7 @@ class _VoiceChatPageState extends State<VoiceChatPage1> with TickerProviderState
     setState(() {});
   }
 
-  // --- VOICE LOGIC (Đã chỉnh sửa tối ưu hơn) ---
   Future<void> _startListening() async {
-    // Nếu bot đang nói mà mình bấm Mic, thì bot phải im lặng ngay để nghe mình
     if (_isSpeaking) {
       await _stopSpeaking();
     }
@@ -130,7 +124,6 @@ class _VoiceChatPageState extends State<VoiceChatPage1> with TickerProviderState
           _liveVoiceText = "";
         });
         _micAnimController.stop();
-        // debugPrint('Error: $val');
       },
     );
 
@@ -143,13 +136,11 @@ class _VoiceChatPageState extends State<VoiceChatPage1> with TickerProviderState
 
       _speech.listen(
         localeId: "vi_VN",
-        // Tăng thời gian lắng nghe lên 30s để nói câu dài thoải mái
         listenFor: const Duration(seconds: 30),
-        // Tự động ngắt sau 2 giây im lặng (bạn có thể tăng lên nếu muốn nghĩ lâu hơn)
         pauseFor: const Duration(seconds: 2),
         partialResults: true,
         cancelOnError: true,
-        listenMode: stt.ListenMode.dictation, // Chế độ đọc chính tả giúp bắt chữ tốt hơn
+        listenMode: stt.ListenMode.dictation,
         onResult: (result) {
           setState(() {
             _liveVoiceText = result.recognizedWords;
@@ -183,7 +174,6 @@ class _VoiceChatPageState extends State<VoiceChatPage1> with TickerProviderState
   }
 
   Future<void> _handleSend(String text) async {
-    // Nếu bot đang nói, tắt ngay
     if (_isSpeaking) await _stopSpeaking();
 
     if (text.trim().isEmpty) return;
@@ -243,12 +233,9 @@ class _VoiceChatPageState extends State<VoiceChatPage1> with TickerProviderState
           }
         }
 
-        // Xóa dấu *
         botReply = botReply.replaceAll('*', '');
 
         _addMessage(botReply, isUser: false);
-
-        // Đọc văn bản
         await _tts.speak(botReply);
 
       } else {
@@ -277,8 +264,6 @@ class _VoiceChatPageState extends State<VoiceChatPage1> with TickerProviderState
       }
     });
   }
-
-  // --- WIDGETS ---
 
   Widget _buildMessageItem(String text, bool isUser, {bool isTemp = false}) {
     return Align(
@@ -319,9 +304,8 @@ class _VoiceChatPageState extends State<VoiceChatPage1> with TickerProviderState
     );
   }
 
-  // Widget nút dừng đọc
   Widget _buildStopSpeakingButton() {
-    if (!_isSpeaking) return const SizedBox.shrink(); // Ẩn nếu không nói
+    if (!_isSpeaking) return const SizedBox.shrink();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -429,10 +413,8 @@ class _VoiceChatPageState extends State<VoiceChatPage1> with TickerProviderState
                 ),
               ),
 
-              // --- HIỂN THỊ NÚT DỪNG NÓI ---
               _buildStopSpeakingButton(),
 
-              // KHU VỰC NHẬP LIỆU
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 decoration: BoxDecoration(
@@ -448,7 +430,6 @@ class _VoiceChatPageState extends State<VoiceChatPage1> with TickerProviderState
                 child: SafeArea(
                   child: Row(
                     children: [
-                      // NÚT MIC
                       GestureDetector(
                         onTap: _isListening ? _stopListeningAndSend : _startListening,
                         child: AnimatedBuilder(
@@ -475,7 +456,6 @@ class _VoiceChatPageState extends State<VoiceChatPage1> with TickerProviderState
 
                       const SizedBox(width: 10),
 
-                      // Ô NHẬP TEXT
                       Expanded(
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -498,7 +478,6 @@ class _VoiceChatPageState extends State<VoiceChatPage1> with TickerProviderState
 
                       const SizedBox(width: 10),
 
-                      // NÚT GỬI
                       IconButton(
                         onPressed: () => _handleSend(_textController.text),
                         icon: const Icon(Icons.send_rounded),

@@ -35,9 +35,9 @@ class _AboutDialogWidgetState extends State<AboutDialogWidget> {
   @override
   Widget build(BuildContext context) {
     final String data = '''
-**🌿 Nhớ App - Người Bạn Đồng Hành Sức Khỏe**
+**🌿 An Tâm App - Người Bạn Đồng Hành Sức Khỏe**
 
-Nhớ App là ứng dụng chăm sóc sức khỏe toàn diện dành riêng cho người cao tuổi, được phát triển với sứ mệnh mang đến cuộc sống khỏe mạnh, hạnh phúc và an tâm cho thế hệ bạc đầu.
+An Tâm App là ứng dụng chăm sóc sức khỏe toàn diện dành riêng cho người cao tuổi, được phát triển với sứ mệnh mang đến cuộc sống khỏe mạnh, hạnh phúc và an tâm cho thế hệ bạc đầu.
 
 **Tính năng nổi bật:**
 * Trợ lý AI thông minh hỗ trợ 24/7
@@ -48,12 +48,12 @@ Nhớ App là ứng dụng chăm sóc sức khỏe toàn diện dành riêng cho
 * Luyện tập thể dục với AI nhận diện tư thế
 
 Phiên bản: $_appVersion
-© 2024-2025 Nhớ App Team
+© 2024-2025 An Tâm App Team
 ''';
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: const Text('Về Nhớ App', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+      title: const Text('Về An Tâm App', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
       content: SizedBox(
         width: double.maxFinite,
         child: SingleChildScrollView(

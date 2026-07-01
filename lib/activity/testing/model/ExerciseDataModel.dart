@@ -1,4 +1,4 @@
-import "dart:ui";
+﻿import "dart:ui";
 enum ExcerciseType{PushUps,Squats,DownwardDogPlank,JumpingJack,HighKnees}
 class ExerciseDataModel{
   String title;

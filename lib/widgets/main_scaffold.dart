@@ -21,7 +21,7 @@ class MainScaffold extends StatelessWidget {
     required this.onTabChanged,      // Bắt buộc phải có để chuyển tab
     required this.onNotificationTap, // Bắt buộc phải có để xử lý thông báo
     this.onAvatarTap,
-    this.appName = 'Nhớ App',
+    this.appName = 'An Tâm App',
     this.userName,
     this.notificationCount = 0,
   });

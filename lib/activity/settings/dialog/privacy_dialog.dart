@@ -10,7 +10,7 @@ class PrivacyDialogWidget extends StatelessWidget {
     const String data = '''
 *Có hiệu lực từ: 19/12/2025*
 
-Nhớ App cam kết bảo vệ quyền riêng tư và thông tin cá nhân của người dùng. Chính sách này giải thích cách chúng tôi thu thập, sử dụng và bảo vệ dữ liệu của bạn.
+An Tâm App cam kết bảo vệ quyền riêng tư và thông tin cá nhân của người dùng. Chính sách này giải thích cách chúng tôi thu thập, sử dụng và bảo vệ dữ liệu của bạn.
 
 **1. Thông tin chúng tôi thu thập**
 *Thông tin cá nhân:*

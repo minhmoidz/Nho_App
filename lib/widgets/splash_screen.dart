@@ -124,7 +124,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           ],
                         ).createShader(bounds),
                         child: const Text(
-                          'Nhớ App',
+                          'An Tâm App',
                           style: TextStyle(
                             fontSize: 36,
                             fontWeight: FontWeight.bold,

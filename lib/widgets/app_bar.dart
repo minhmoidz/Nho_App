@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:nhoapp/constants/app_colors.dart';
 
 class NhoAppBar extends StatelessWidget implements PreferredSizeWidget {
